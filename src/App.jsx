@@ -1,0 +1,25 @@
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import AdminPanel from "../pages/adminpanel";
+import StudentPanel from "../pages/StudentPanel";
+import Vocabulary from "./forms/vocabulary";
+import Sentence from "./forms/Sentence";
+import Practice from "./forms/Practice";
+import Dayspage from "../pages/Dayspage";
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Dayspage />} />  {/* Landing Page */}
+        <Route path="adminpanel" element={<AdminPanel />} />
+        <Route path="studentpanel" element={<StudentPanel />} />
+        <Route path="vocabulary" element={<Vocabulary />} />
+        <Route path="practice" element={<Practice />} />
+        <Route path="sentence" element={<Sentence />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;
