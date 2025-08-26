@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
-
+import React from 'react'
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-
-const Sentence = () => {
+const Quiz = () => {
 const [avatarId, setAvatarId] = useState("");
   const [bgImages, setBgImages] = useState([]);
   const [dragDropFiles, setDragDropFiles] = useState([]);
@@ -100,8 +99,8 @@ const [avatarId, setAvatarId] = useState("");
  const handleDownloadTemplate = () => {
     // Create a sample template download
      const link = document.createElement("a");
-  link.href = "/templates/avatar_tutor_template.xlsx"; // relative path in public folder
-  link.download = "avatar_tutor_template.xlsx";       // suggested download filename
+  link.href = "/templates/quiz_template.xlsx"; // relative path in public folder
+  link.download = "quiz_template.xlsx";       // suggested download filename
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -460,6 +459,6 @@ const [avatarId, setAvatarId] = useState("");
       `}</style>
     </div>
   );
-};
+}
 
-export default Sentence;
+export default Quiz

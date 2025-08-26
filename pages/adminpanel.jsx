@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { ListTree, BarChart, ScrollText, Settings, ClipboardList, Rocket, Eye } from 'lucide-react';
+import { ListTree, BarChart, ScrollText, Settings, ClipboardList, Rocket, Eye, BrainCircuit, Handshake, ArrowRight, XCircle } from 'lucide-react';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -9,113 +9,107 @@ const AdminPanel = () => {
 
   const selectedDay = location.state?.selectedDay || "Unknown Day";
 
-  // State to manage the card selection toggles
-  const [cardToggles, setCardToggles] = useState(Array(5).fill(false));
+  const [cardToggles, setCardToggles] = useState(Array(6).fill(false));
 
-  // Array of card data, now including an icon component for each
   const cards = [
-    { title: "Vocabulary", content: "Manage and update vocabulary lists.", path: "/vocabulary", icon: ListTree },
-    { title: "Sentence Pronunciation", content: "Analyze user engagement and performance.", path: "/sentence", icon: BarChart },
-    { title: "Practice Speaking", content: "View and filter recent system activities.", path: "/practice", icon: ScrollText },
-    { title: "Conversation-Avatar to Student", content: "Manage and organize content assets.", path: "/avatartostudent", icon: ClipboardList },
-    { title: "Conversation-Student To Avatar", content: "Manage and organize content assets.", path: "/studenttoavatar", icon: ClipboardList },
-    { title: "Quiz", content: "Adjust system configuration and preferences.", path: "/settings", icon: Settings },
-
+    { title: "Vocabulary", content: "Manage and update vocabulary lists.", path: "/vocabulary", icon: ListTree, status: "Active" },
+    { title: "Sentence Pronunciation", content: "Analyze user engagement and performance.", path: "/sentence", icon: BrainCircuit, status: "Draft" },
+    { title: "Practice Speaking", content: "View and filter recent system activities.", path: "/practice", icon: ScrollText, status: "Active" },
+    { title: "Conversation-Avatar to Student", content: "Manage and organize content assets.", path: "/avatartostudent", icon: Handshake, status: "Draft" },
+    { title: "Conversation-Student To Avatar", content: "Manage and organize content assets.", path: "/studenttoavatar", icon: ClipboardList, status: "Active" },
+    { title: "Quiz", content: "Adjust system configuration and preferences.", path: "/quiz", icon: Settings, status: "Draft" },
   ];
- 
 
-  // Handler for the top-right toggle switch
   const handleToggleChange = (index) => {
     const newToggles = [...cardToggles];
     newToggles[index] = !newToggles[index];
     setCardToggles(newToggles);
+    toast.success(`Module is now ${newToggles[index] ? 'Active' : 'Draft'}!`);
   };
 
-  // Handler for card clicks, navigating to the specified path
-  const handleCardClick = (index) => {
-    navigate(cards[index].path);
+  const handleCardClick = (path) => {
+    navigate(path);
   };
 
-  // Handler for the 'Go Live' button, now always enabled
   const handleGoLive = () => {
-    toast.success("Content is now live!");
+    toast.success("Content for the selected day is now live!");
   };
 
-  // Handler for the 'Preview' button, now always enabled
   const handlePreview = () => {
     toast.success("Preview loaded!");
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 p-8 flex flex-col items-center font-inter">
-      <Toaster position="top-right" />
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans flex flex-col items-center">
+      <Toaster position="top-right" reverseOrder={false} />
 
       {/* Top Header with Go Back and Day */}
-      <div className="w-full max-w-6xl flex items-center justify-between mb-10">
+      <div className="w-full max-w-7xl flex items-center justify-between mb-12">
         <button
           onClick={() => navigate("/")}
-          className="px-6 py-2 bg-gray-300 text-gray-800 rounded-full shadow-lg hover:bg-gray-400 transition-colors duration-200"
+          className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors duration-200"
         >
-          ⬅ Go Back
+          <ArrowRight className="rotate-180" size={16} />
+          <span>Go Back</span>
         </button>
-        <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-800 text-center flex-1">
-          {selectedDay}
+        <h1 className="text-4xl font-bold text-center flex-1 text-gray-900">
+          Admin Dashboard
         </h1>
-        <div className="w-24" /> {/* Spacer div */}
+        <div className="w-24" />
+      </div>
+      
+      {/* Day Selector */}
+      <div className="w-full max-w-7xl mb-12">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+          Modules for: <span className="text-indigo-600">{selectedDay}</span>
+        </h2>
       </div>
 
       {/* Cards Grid */}
-      <div className="w-full max-w-6xl flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="w-full max-w-7xl flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, index) => {
-          const Icon = card.icon; // Get the icon component from the card data
+          const Icon = card.icon;
+          const isActive = cardToggles[index];
+
           return (
             <div
               key={index}
-              onClick={() => handleCardClick(index)}
-              className="bg-white rounded-3xl border border-gray-200 p-8 flex flex-col items-center text-center relative
-                         shadow-xl hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer"
+              className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col justify-between shadow-sm
+                hover:ring-2 hover:ring-indigo-500 transition-all duration-300 ease-in-out cursor-pointer"
+              onClick={() => handleCardClick(card.path)}
             >
-              {/* Top-right toggle (Kept as requested) */}
-              <label
-                className="absolute top-4 right-4 flex items-center cursor-pointer select-none"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="checkbox"
-                  className="hidden"
-                  checked={cardToggles[index]}
-                  onChange={() => handleToggleChange(index)}
-                />
-                <div
-                  className={`relative w-12 h-6 rounded-full transition-all duration-300
-                             ${cardToggles[index] ? "bg-gradient-to-r from-green-400 to-green-600" : "bg-gray-300"}`}
-                >
-                  <div
-                    className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full
-                               transition-all duration-300 transform
-                               ${cardToggles[index] ? "translate-x-6" : "translate-x-0"} shadow`}
-                  ></div>
+              {/* Card Header with Icon, Title, and Toggle */}
+              <div className="flex items-start justify-between">
+                <div className="flex flex-col">
+                  {/* Icon with circular background */}
+                  <div className="p-3 mb-2 w-10 h-10 flex items-center justify-center rounded-full bg-indigo-500 text-white">
+                    <Icon size={20} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mt-2">{card.title}</h3>
                 </div>
-              </label>
-
-              {/* Card Icon */}
-              <div className="text-purple-600 mb-6 transition-transform duration-300 group-hover:scale-110">
-                <Icon size={48} />
+                {/* Toggle Switch */}
+                <label className="flex items-center cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={isActive}
+                    onChange={() => handleToggleChange(index)}
+                  />
+                  <div className={`relative w-12 h-6 rounded-full transition-all duration-300 ${isActive ? "bg-green-500" : "bg-gray-300"}`}>
+                    <div className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 transform ${isActive ? "translate-x-6" : "translate-x-0"} shadow-md`}></div>
+                  </div>
+                </label>
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">{card.title}</h2>
-              <p className="text-gray-600 leading-relaxed">{card.content}</p>
+              {/* Card Content */}
+              <p className="text-sm text-gray-600 mt-4 leading-relaxed flex-grow">
+                {card.content}
+              </p>
 
-              {/* Bottom-left "Completed" status indicator */}
-              <div
-                className={`absolute bottom-4 left-4 flex items-center justify-center h-8 px-4 rounded-full transition-all duration-300 ease-in-out
-                           ${cardToggles[index] ? "bg-green-600 text-white" : "bg-gray-300 text-gray-600"}`}
-              >
-                {cardToggles[index] ? (
-                  <span className="font-semibold text-sm">Completed</span>
-                ) : (
-                  <span className="font-semibold text-sm">In Progress</span>
-                )}
+              {/* Status Indicator at the bottom */}
+              <div className="mt-6 flex items-center text-sm font-medium">
+                <span className={`h-2.5 w-2.5 rounded-full mr-2 ${isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                <span className={`${isActive ? 'text-green-600' : 'text-gray-500'}`}>{isActive ? "completed" : "in progress"}</span>
               </div>
             </div>
           );
@@ -123,26 +117,20 @@ const AdminPanel = () => {
       </div>
 
       {/* Bottom Buttons */}
-      <div className="w-full max-w-6xl flex items-center justify-center gap-6 mt-10">
+      <div className="w-full max-w-7xl flex items-center justify-center gap-6 mt-12">
         <button
           onClick={handleGoLive}
-          className={`
-            px-[3em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium
-            rounded-[45px] shadow-lg transition-all duration-300
-            flex items-center justify-center outline-none gap-2
-            bg-green-500 text-white hover:bg-green-600 hover:shadow-[0px_15px_20px_rgba(46,229,157,0.4)] hover:-translate-y-[7px] active:-translate-y-[1px] cursor-pointer
-          `}
+          className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white"
         >
-          <Rocket size={18} />
+          <Rocket size={18} className="inline-block mr-2" />
           Go Live
         </button>
 
         <button
           onClick={handlePreview}
-          className={`flex items-center gap-2 px-6 py-3 rounded-full shadow-lg transition-colors duration-200
-                      bg-gray-700 hover:bg-gray-800 text-white font-semibold`}
+          className="px-8 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-white"
         >
-          <Eye size={18} />
+          <Eye size={18} className="inline-block mr-2" />
           Preview
         </button>
       </div>

@@ -100,17 +100,16 @@ const Practice = () => {
       setTimeout(() => setShowSuccess(false), 3000);
     };
   
-    const handleDownloadTemplate = () => {
-      // Create a sample template download
-      const element = document.createElement("a");
-      const file = new Blob(["Sample Template Content"], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = "vocabulary-template.txt";
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-    };
-  
+ const handleDownloadTemplate = () => {
+    // Create a sample template download
+     const link = document.createElement("a");
+  link.href = "/templates/practice_sentences_template.xlsx"; // relative path in public folder
+  link.download = "practice_sentences_template.xlsx";       // suggested download filename
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  };
+
     const handleBgImageUpload = (e) => {
       const files = Array.from(e.target.files);
       setBgImages(prev => [...prev, ...files]);
