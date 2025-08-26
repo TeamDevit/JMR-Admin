@@ -220,10 +220,10 @@ const Practice = () => {
   
             <button
               onClick={handleDownloadTemplate}
-              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600
-                       text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
-                       hover:from-violet-700 hover:to-purple-700 hover:-translate-y-0.5
-                       active:translate-y-0 active:scale-95"
+              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-700 to-sky-900
+                     text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
+                     hover:from-sky-900 hover:to-sky-950 hover:-translate-y-0.5
+                     active:translate-y-0 active:scale-95"
             >
               <DownloadIcon className="group-hover:scale-110 transition-transform" />
               <span className="font-medium">Download Template</span>

@@ -215,9 +215,9 @@ const Vocabulary = () => {
 
           <button
             onClick={handleDownloadTemplate}
-            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600
+            className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-700 to-sky-900
                      text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300
-                     hover:from-violet-700 hover:to-purple-700 hover:-translate-y-0.5
+                     hover:from-sky-900 hover:to-sky-950 hover:-translate-y-0.5
                      active:translate-y-0 active:scale-95"
           >
             <DownloadIcon className="group-hover:scale-110 transition-transform" />
@@ -227,14 +227,11 @@ const Vocabulary = () => {
 
         {/* Main Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 
-                       bg-clip-text text-transparent mb-4 animate-pulse">
-            Vocabulary Generator
+          <h1 className="text-5xl font-bold bg-slate-800
+                       bg-clip-text text-transparent mb-4 ">
+            Vocabulary
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Create personalized vocabulary content with AI-powered generation. 
-            Upload your materials and let our system work its magic.
-          </p>
+         
         </div>
 
         {/* Main Content Grid */}

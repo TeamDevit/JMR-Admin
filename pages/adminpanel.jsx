@@ -24,7 +24,7 @@ const AdminPanel = () => {
     const newToggles = [...cardToggles];
     newToggles[index] = !newToggles[index];
     setCardToggles(newToggles);
-    toast.success(`Module is now ${newToggles[index] ? 'Active' : 'Draft'}!`);
+    toast.success(`Toggle is ${newToggles[index] ? 'On' : 'off'}!`);
   };
 
   const handleCardClick = (path) => {
