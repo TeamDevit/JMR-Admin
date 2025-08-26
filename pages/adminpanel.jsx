@@ -15,12 +15,14 @@ const AdminPanel = () => {
   // Array of card data, now including an icon component for each
   const cards = [
     { title: "Vocabulary", content: "Manage and update vocabulary lists.", path: "/vocabulary", icon: ListTree },
-    { title: "Analytics", content: "Analyze user engagement and performance.", path: "/sentence", icon: BarChart },
-    { title: "Activity Logs", content: "View and filter recent system activities.", path: "/practice", icon: ScrollText },
-    { title: "Settings", content: "Adjust system configuration and preferences.", path: "/settings", icon: Settings },
-    { title: "Student To Avatar", content: "Manage and organize content assets.", path: "/studenttoavatar", icon: ClipboardList },
-    
+    { title: "Sentence Pronunciation", content: "Analyze user engagement and performance.", path: "/sentence", icon: BarChart },
+    { title: "Practice Speaking", content: "View and filter recent system activities.", path: "/practice", icon: ScrollText },
+    { title: "Conversation-Avatar to Student", content: "Manage and organize content assets.", path: "/avatartostudent", icon: ClipboardList },
+    { title: "Conversation-Student To Avatar", content: "Manage and organize content assets.", path: "/studenttoavatar", icon: ClipboardList },
+    { title: "Quiz", content: "Adjust system configuration and preferences.", path: "/settings", icon: Settings },
+
   ];
+ 
 
   // Handler for the top-right toggle switch
   const handleToggleChange = (index) => {
