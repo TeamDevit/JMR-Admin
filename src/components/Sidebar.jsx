@@ -56,11 +56,12 @@ function Sidebar() {
       description: "Interactive drills",
     },
     {
-      name: "AI Assistant",
-      path: "/AiAssistant",
+      name: "Avatars",
+      path: "/Avatars",
       icon: Bot,
       description: "Get help instantly",
     },
+    
   ];
 
   // Logic to control the sidebar's width and position
