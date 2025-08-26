@@ -18,7 +18,8 @@ const AdminPanel = () => {
     { title: "Analytics", content: "Analyze user engagement and performance.", path: "/sentence", icon: BarChart },
     { title: "Activity Logs", content: "View and filter recent system activities.", path: "/practice", icon: ScrollText },
     { title: "Settings", content: "Adjust system configuration and preferences.", path: "/settings", icon: Settings },
-    { title: "Content", content: "Manage and organize content assets.", path: "/content", icon: ClipboardList },
+    { title: "Student To Avatar", content: "Manage and organize content assets.", path: "/studenttoavatar", icon: ClipboardList },
+    
   ];
 
   // Handler for the top-right toggle switch

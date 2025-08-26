@@ -7,6 +7,7 @@ import Sentence from "./forms/Sentence";
 import Practice from "./forms/Practice";
 import Dayspage from "../pages/Dayspage";
 import Avatars from "../pages/Avatars";
+import StudentToAvatar from "./forms/StudentToAvatar";
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
         <Route path="practice" element={<Practice />} />
         <Route path="sentence" element={<Sentence />} />
                 <Route path="avatars" element={<Avatars />} />
-
+         <Route path="studenttoavatar" element={<StudentToAvatar/>}/>
       </Route>
     </Routes>
   );

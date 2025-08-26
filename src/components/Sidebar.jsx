@@ -62,6 +62,7 @@ function Sidebar() {
       description: "Get help instantly",
     },
     
+    
   ];
 
   // Logic to control the sidebar's width and position
