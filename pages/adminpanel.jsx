@@ -79,6 +79,7 @@ const AdminPanel = () => {
             className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center text-center relative 
                        hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer"
           >
+            {/* Original Toggle at top-right */}
             <label
               className="absolute top-4 right-4 flex items-center cursor-pointer select-none"
               onClick={(e) => e.stopPropagation()}
@@ -101,6 +102,35 @@ const AdminPanel = () => {
               </div>
             </label>
 
+            {/* Neumorphic Checkbox at bottom-left */}
+            <label
+              className="absolute bottom-4 left-4 flex items-center cursor-pointer select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="checkbox"
+                checked={cardToggles[index]}
+                onChange={() => handleToggleChange(index)}
+                className="absolute opacity-0 w-0 h-0"
+              />
+
+              <div
+                className={`relative w-6 h-6 rounded-full transition-all duration-400 
+                  shadow-[inset_0.07em_0.07em_0.12em_#b3b3b3,inset_-0.07em_-0.07em_0.12em_#ffffff]
+                  ${cardToggles[index] 
+                    ? "bg-green-600 shadow-[inset_-0.07em_-0.07em_0.12em_#008300,inset_0.07em_0.07em_0.12em_#9ef99e,0.05em_0.05em_0.1em_-0.05em_#7a7a7a]" 
+                    : "bg-gray-300"} 
+                `}
+              >
+                {cardToggles[index] && (
+                  <span
+                    className="absolute left-1/2 top-1/2 w-1 h-2 border-white border-r-2 border-b-2 
+                               transform -translate-x-1/2 -translate-y-1/2 rotate-45"
+                  ></span>
+                )}
+              </div>
+            </label>
+
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{card.title}</h2>
             <p className="text-gray-600 leading-relaxed">{card.content}</p>
           </div>
@@ -109,38 +139,25 @@ const AdminPanel = () => {
 
       {/* Bottom Buttons */}
       <div className="w-full max-w-6xl flex items-center justify-between mt-10">
-        <button
-    onClick={handleGenerate}
-    className="
-        px-[3em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium text-black
-        bg-white border-none rounded-[45px] shadow-[0px_8px_15px_rgba(0,0,0,0.1)]
-        transition-all duration-300 cursor-pointer outline-none
-        flex items-center gap-2
-        hover:bg-[#8b33ad] hover:shadow-[0px_15px_20px_#8b33ad61]
-        hover:text-white hover:-translate-y-[7px] active:-translate-y-[1px]
-    "
-  >
-    <BsStars size={20} />
-    Generate
-  </button>
+        
 
         {/* Right side: Go Live & Preview */}
         <div className="flex gap-4">
-         <button
-  onClick={handleGoLive}
-  disabled={!isGenerated}
-  className={`
-    px-[3em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium 
-    rounded-[45px] shadow-[0px_8px_15px_rgba(0,0,0,0.1)] transition-all duration-300 
-    flex items-center justify-center outline-none
-    ${isGenerated 
-      ? "bg-green-500 text-white hover:bg-green-600 hover:shadow-[0px_15px_20px_rgba(46,229,157,0.4)] hover:-translate-y-[7px] active:-translate-y-[1px] cursor-pointer" 
-      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-    }
-  `}
->
-  Go Live
-</button>
+          <button
+            onClick={handleGoLive}
+            disabled={!isGenerated}
+            className={`
+              px-[3em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium 
+              rounded-[45px] shadow-[0px_8px_15px_rgba(0,0,0,0.1)] transition-all duration-300 
+              flex items-center justify-center outline-none
+              ${isGenerated 
+                ? "bg-green-500 text-white hover:bg-green-600 hover:shadow-[0px_15px_20px_rgba(46,229,157,0.4)] hover:-translate-y-[7px] active:-translate-y-[1px] cursor-pointer" 
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }
+            `}
+          >
+            Go Live
+          </button>
 
           <button
             onClick={handlePreview}
