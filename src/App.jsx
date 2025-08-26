@@ -6,6 +6,7 @@ import Vocabulary from "./forms/vocabulary";
 import Sentence from "./forms/Sentence";
 import Practice from "./forms/Practice";
 import Dayspage from "../pages/Dayspage";
+import Avatars from "../pages/Avatars";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
         <Route path="vocabulary" element={<Vocabulary />} />
         <Route path="practice" element={<Practice />} />
         <Route path="sentence" element={<Sentence />} />
+                <Route path="avatars" element={<Avatars />} />
+
       </Route>
     </Routes>
   );
