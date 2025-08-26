@@ -125,7 +125,7 @@ const Vocabulary = () => {
       {/* Generate button */}
       <button
     onClick={handleGenerate}
-    className="self-start px-[7em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium text-black
+    className="self-start px-[7em] py-[1.3em] text-[12px] uppercase tracking-[2.5px] font-medium    text-black
                bg-sky-400 border-none rounded-[45px] shadow-[0px_8px_15px_rgba(0,0,0,0.1)]
                transition-all duration-300 cursor-pointer outline-none
                flex items-center gap-2
