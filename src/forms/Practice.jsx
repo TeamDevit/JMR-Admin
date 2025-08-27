@@ -231,16 +231,14 @@ const Practice = () => {
           </div>
   
           {/* Main Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 
-                         bg-clip-text text-transparent mb-4 animate-pulse">
-              Vocabulary Generator
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Create personalized vocabulary content with AI-powered generation. 
-              Upload your materials and let our system work its magic.
-            </p>
-          </div>
+              <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold bg-slate-800
+                       bg-clip-text text-transparent mb-4 ">
+            Practice Speaking
+          </h1>
+         
+        </div>
+
   
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-2 gap-8 mb-12">
