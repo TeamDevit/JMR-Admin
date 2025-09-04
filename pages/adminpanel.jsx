@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import {
   ListTree, ScrollText, Settings, ClipboardList, Rocket, Eye, BrainCircuit,
-  Handshake, ArrowRight, XCircle, GraduationCap, PlusCircle, Users, Pencil, Copy, Search
+  Handshake, ArrowRight, XCircle, GraduationCap, PlusCircle, Users, Pencil, Copy, Search, LogIn, LogOut, BookOpen, FileText, Dumbbell, Bot, ChevronRight, Menu, X
 } from 'lucide-react';
 
 // Helper function to convert a number to Indian Rupee words
@@ -87,23 +87,371 @@ const StudentToAvatarForm = () => (
     </div>
 );
 
-// =========================================================================
-// End of individual form file contents
-// =========================================================================
+// New Avatars Panel Component
+const AvatarsPanel = () => (
+  <div className="flex-1 p-8">
+    <div className="w-full max-w-7xl">
+      <h2 className="text-2xl font-semibold text-gray-700 mb-4 flex items-center space-x-2">
+        <Bot size={24} className="text-indigo-600" />
+        <span>Avatars Management</span>
+      </h2>
+      <p className="text-lg text-gray-600">This is a placeholder for the Avatars Management panel. Here, you would be able to configure and manage the conversational avatars used in the course modules.</p>
+    </div>
+  </div>
+);
 
-const AdminPanel = () => {
-  const [currentView, setCurrentView] = useState('courses');
+// New Instructors Management Panel Component
+const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor }) => {
+  const [showAddInstructorForm, setShowAddInstructorForm] = useState(false);
+  const [instructorFormData, setInstructorFormData] = useState({ name: '', email: '', mobile: '', loginEnabled: true });
+  const [instructorSearchTerm, setInstructorSearchTerm] = useState('');
+
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setInstructorFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (!instructorFormData.name || !instructorFormData.email) {
+      toast.error("Name and Email are required.");
+      return;
+    }
+    handleAddInstructor(instructorFormData);
+    setInstructorFormData({ name: '', email: '', mobile: '', loginEnabled: true });
+    setShowAddInstructorForm(false);
+  };
+
+  const filteredInstructors = instructors.filter(instructor =>
+    instructor.name.toLowerCase().includes(instructorSearchTerm.toLowerCase()) ||
+    instructor.email.toLowerCase().includes(instructorSearchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="flex-1 p-8">
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="w-full max-w-7xl flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-gray-700">Instructors Management</h2>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search size={16} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search instructors..."
+              value={instructorSearchTerm}
+              onChange={(e) => setInstructorSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <button
+            onClick={() => setShowAddInstructorForm(!showAddInstructorForm)}
+            className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
+          >
+            <PlusCircle size={16} />
+            <span>Add Instructor</span>
+          </button>
+        </div>
+      </div>
+
+      {showAddInstructorForm && (
+        <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg mb-8 mx-auto">
+          <h3 className="text-xl font-semibold mb-4">Add New Instructor</h3>
+          <form onSubmit={handleFormSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col">
+                <label htmlFor="instructor-name" className="text-sm font-medium text-gray-700 mb-1">Instructor Name</label>
+                <input
+                  id="instructor-name"
+                  type="text"
+                  name="name"
+                  value={instructorFormData.name}
+                  onChange={handleFormChange}
+                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="instructor-email" className="text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input
+                  id="instructor-email"
+                  type="email"
+                  name="email"
+                  value={instructorFormData.email}
+                  onChange={handleFormChange}
+                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="instructor-mobile" className="text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <input
+                  id="instructor-mobile"
+                  type="tel"
+                  name="mobile"
+                  value={instructorFormData.mobile}
+                  onChange={handleFormChange}
+                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="flex items-center space-x-2 mt-6">
+                <input
+                  id="login-access"
+                  type="checkbox"
+                  name="loginEnabled"
+                  checked={instructorFormData.loginEnabled}
+                  onChange={handleFormChange}
+                  className="w-4 h-4 text-indigo-600 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <label htmlFor="login-access" className="text-sm font-medium text-gray-700">Login Access</label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => setShowAddInstructorForm(false)}
+                className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Save Instructor
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+      
+      <div className="w-full max-w-7xl">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Instructor Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Mobile
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Login Access
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredInstructors.length > 0 ? (
+                filteredInstructors.map((instructor, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{instructor.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{instructor.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{instructor.mobile}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${instructor.loginEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {instructor.loginEnabled ? 'ENABLED' : 'DISABLED'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button onClick={() => handleDeleteInstructor(instructor.email)} className="text-red-600 hover:text-red-900">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">No instructors found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Login Panel Component
+const LoginPanel = ({ handleLogin }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleLogin(email, password);
+  };
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <div className="flex justify-center mb-6">
+            <img
+              className="h-16 w-auto rounded-lg shadow-lg"
+              src="src/assets/erus.jpg"
+              alt="Erus Academy Logo"
+            />
+          </div>
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+            Erus Academy
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            MEANS FOR SKILL UP
+          </p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember Me</label>
+            </div>
+            <div className="text-sm">
+              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot Password? Contact your Administrator
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Sign In
+            </button>
+          </div>
+        </form>
+        <p className="mt-2 text-center text-xs text-gray-400">
+          By using this software, you agree to our terms, conditions, and license agreement.
+        </p>
+        <p className="text-center text-xs text-gray-400">
+          © Copyright 2025 - Erus Academy Private Limited
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
+  const navigation = [
+    { name: 'Courses', icon: GraduationCap, view: 'courses', roles: ['admin', 'instructor'] },
+    { name: 'Avatars', icon: Bot, view: 'avatars', roles: ['admin', 'instructor'] },
+    { name: 'Instructors', icon: Users, view: 'instructors', roles: ['admin'] },
+  ];
+
+  const allowedNavigation = navigation.filter(item => item.roles.includes(userRole));
+
+  return (
+    <div className="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
+      <div>
+        <div className="flex items-center space-x-2 mb-8">
+          <img
+            className="h-10 w-auto rounded-lg shadow-md"
+            src="https://placehold.co/128x128/E5E7EB/4B5563?text=Erus+Logo"
+            alt="Erus Academy Logo"
+          />
+          <span className="text-xl font-bold text-gray-900">Erus Academy</span>
+        </div>
+        <nav className="space-y-2">
+          {allowedNavigation.map((item) => (
+            <button
+              key={item.view}
+              onClick={() => setCurrentView(item.view)}
+              className={`flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200
+                ${currentView === item.view ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
+            >
+              <item.icon size={20} />
+              <span>{item.name}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+      <button
+        onClick={handleLogout}
+        className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
+      >
+        <LogOut size={20} />
+        <span>Logout</span>
+      </button>
+    </div>
+  );
+};
+
+const AdminDashboard = () => {
+  const [currentView, setCurrentView] = useState('login'); // 'login', 'courses', 'days', 'modules', 'module-form', 'instructors', 'avatars'
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [showAddCourseForm, setShowAddCourseForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [userRole, setUserRole] = useState(null); // 'admin', 'instructor', null
+
   const [courses, setCourses] = useState([
     { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45 },
     { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82 },
     { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60 },
   ]);
+
+  const [instructors, setInstructors] = useState([
+    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true },
+    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true },
+  ]);
+
+  const handleAddInstructor = (newInstructorData) => {
+    const newId = `instr-${Date.now()}`;
+    setInstructors(prev => [...prev, { id: newId, ...newInstructorData }]);
+    toast.success("Instructor added successfully!");
+  };
+
+  const handleDeleteInstructor = (email) => {
+    setInstructors(prev => prev.filter(i => i.email !== email));
+    toast.success("Instructor deleted successfully!");
+  };
 
   const [courseFormData, setCourseFormData] = useState({
     id: null,
@@ -127,6 +475,26 @@ const AdminPanel = () => {
     { title: "Quiz", content: "Manage and update the Quiz Module.", path: "/quiz", icon: Settings, status: "Draft", form: "QuizForm" },
   ]);
 
+  const handleLogin = (email, password) => {
+    if (email === "admin@erus.com" && password === "admin123") {
+      setUserRole('admin');
+      setCurrentView('courses');
+      toast.success("Signed in as Admin!");
+    } else if (email === "instructor@erus.com" && password === "instructor123") {
+      setUserRole('instructor');
+      setCurrentView('courses');
+      toast.success("Signed in as Instructor!");
+    } else {
+      toast.error("Invalid credentials.");
+    }
+  };
+
+  const handleLogout = () => {
+    setUserRole(null);
+    setCurrentView('login');
+    toast.success("Logged out successfully!");
+  };
+
   const handleGoBack = () => {
     if (currentView === 'module-form') {
       setCurrentView('modules');
@@ -137,6 +505,8 @@ const AdminPanel = () => {
     } else if (currentView === 'days') {
       setCurrentView('courses');
       setSelectedCourse(null);
+    } else if (currentView === 'instructors' || currentView === 'avatars') {
+      setCurrentView('courses');
     }
   };
 
@@ -227,20 +597,18 @@ const AdminPanel = () => {
     toast.success("Module status updated!");
   };
 
-  const renderView = () => {
+  const renderContent = () => {
     if (currentView === 'courses') {
       const filteredCourses = courses.filter(course =>
         course.name.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
         course.code.toLowerCase().includes(courseSearchTerm.toLowerCase())
       );
       return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans flex flex-col items-center">
+        <div className="flex-1 p-8">
           <Toaster position="top-right" reverseOrder={false} />
           <div className="w-full max-w-7xl flex items-center justify-between mb-12">
             <h1 className="text-4xl font-bold text-center flex-1 text-gray-900">Admin Dashboard</h1>
-            <div className="w-24" />
           </div>
-
           <div className="w-full max-w-7xl flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-700">Courses</h2>
             <div className="flex items-center space-x-4">
@@ -269,9 +637,8 @@ const AdminPanel = () => {
               </button>
             </div>
           </div>
-
           {showAddCourseForm && (
-            <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg mb-8">
+            <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg mb-8 mx-auto">
               <h3 className="text-xl font-semibold mb-4">{isEditing ? "Edit Course" : "Add New Course"}</h3>
               <form onSubmit={isEditing ? handleUpdateCourse : handleAddCourse}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,7 +705,7 @@ const AdminPanel = () => {
                       placeholder="e.g., 8"
                       className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
-                     {courseFormData.duration > 0 && (
+                    {courseFormData.duration > 0 && (
                       <p className="text-sm text-gray-500 mt-1">
                         This is a {courseFormData.duration * 7} day course.
                       </p>
@@ -379,7 +746,6 @@ const AdminPanel = () => {
               </form>
             </div>
           )}
-
           <div className="w-full max-w-7xl flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.length > 0 ? (
@@ -564,7 +930,7 @@ const AdminPanel = () => {
         day.toLowerCase().includes(daySearchTerm.toLowerCase())
       );
       return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans flex flex-col items-center">
+        <div className="flex-1 p-8">
           <Toaster position="top-right" reverseOrder={false} />
           <div className="w-full max-w-7xl flex items-center justify-between mb-12">
             <button
@@ -624,7 +990,7 @@ const AdminPanel = () => {
       );
     } else if (currentView === 'modules') {
       return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans flex flex-col items-center">
+        <div className="flex-1 p-8">
           <Toaster position="top-right" reverseOrder={false} />
           <div className="w-full max-w-7xl flex items-center justify-between mb-12">
             <button
@@ -731,10 +1097,8 @@ const AdminPanel = () => {
         }
       })();
       const title = selectedModule?.title || 'Unknown Module';
-      const content = selectedModule?.content || 'Content not available.';
-
       return (
-          <div className="min-h-screen bg-gray-50 text-gray-900 p-8 font-sans flex flex-col items-center">
+          <div className="flex-1 p-8">
             <Toaster position="top-right" reverseOrder={false} />
             <div className="w-full max-w-7xl flex items-center justify-between mb-12">
                 <button
@@ -745,7 +1109,6 @@ const AdminPanel = () => {
                 <span>Go Back to Modules</span>
                 </button>
                 <h1 className="text-4xl font-bold text-center flex-1 text-gray-900">{title}</h1>
-                <div className="w-24" />
             </div>
             <div className="w-full max-w-7xl p-8 bg-white rounded-lg shadow-lg">
                 <h2 className="text-2xl font-semibold mb-4 text-indigo-600">
@@ -761,10 +1124,36 @@ const AdminPanel = () => {
             </div>
           </div>
       );
+    } else if (currentView === 'instructors') {
+      return (
+        <InstructorsPanel
+          instructors={instructors}
+          handleAddInstructor={handleAddInstructor}
+          handleDeleteInstructor={handleDeleteInstructor}
+        />
+      );
+    } else if (currentView === 'avatars') {
+      return <AvatarsPanel />;
     }
   };
 
-  return renderView();
+  return (
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      {userRole ? (
+        <>
+          <Sidebar
+            userRole={userRole}
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            handleLogout={handleLogout}
+          />
+          {renderContent()}
+        </>
+      ) : (
+        <LoginPanel handleLogin={handleLogin} />
+      )}
+    </div>
+  );
 };
 
-export default AdminPanel;
+export default AdminDashboard;
