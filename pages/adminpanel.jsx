@@ -10,9 +10,9 @@ const convertNumberToWords = (num) => {
   if (isNaN(num) || num === null || num === '') {
     return "";
   }
-  const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
-  const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
-  const c = ['', 'hundred', 'thousand', 'lakh', 'crore'];
+  const a = ['', 'ONE ', 'TWO ', 'THREE ', 'FOUR ', 'FIVE ', 'SIX ', 'SEVEN ', 'EIGHT ', 'NINE ', 'TEN ', 'ELEVEN ', 'TWELVE ', 'THIRTEEN ', 'FOURTEEN ', 'FIFTEEN ', 'SIXTEEN ', 'SEVENTEEN ', 'EIGHTEEN ', 'NINETEEN '];
+  const b = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+  const c = ['', 'HUNDRED', 'THOUSAND', 'LAKH', 'CRORE'];
 
   const numString = String(num);
   let output = '';
@@ -36,7 +36,7 @@ const convertNumberToWords = (num) => {
   inWords(n[4], 1);
   inWords(n[5], 0);
 
-  return output.replace(/\s+/g, ' ').trim() + " Rupees";
+  return output.replace(/\s+/g, ' ').trim() + " RUPEES";
 };
 
 // =========================================================================
@@ -95,6 +95,7 @@ const AdminPanel = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [showAddCourseForm, setShowAddCourseForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [courses, setCourses] = useState([
     { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', price: 12999, duration: 8, studentsEnrolled: 45 },
@@ -177,7 +178,7 @@ const AdminPanel = () => {
     ));
     setCourseFormData({ id: null, code: '', name: '', description: '', price: '', duration: '' });
     setIsEditing(false);
-    setShowAddCourseForm(false);
+    setShowEditModal(false);
     toast.success("Course updated successfully!");
   };
 
@@ -191,7 +192,7 @@ const AdminPanel = () => {
       duration: course.duration,
     });
     setIsEditing(true);
-    setShowAddCourseForm(true);
+    setShowEditModal(true);
   };
 
   const handleDuplicateCourse = (course) => {
@@ -304,7 +305,7 @@ const AdminPanel = () => {
                       className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
+                      {courseFormData.price ? convertNumberToWords(courseFormData.price) : "ENTER A PRICE"}
                     </p>
                   </div>
                   <div className="flex flex-col">
@@ -318,6 +319,11 @@ const AdminPanel = () => {
                       placeholder="e.g., 8"
                       className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
+                    {courseFormData.duration > 0 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        This is a {courseFormData.duration * 7} day course.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col mt-4">
@@ -332,11 +338,6 @@ const AdminPanel = () => {
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   ></textarea>
                 </div>
-                {courseFormData.duration > 0 && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    This is a {courseFormData.duration * 7} day course.
-                  </p>
-                )}
                 <div className="flex justify-end gap-2 mt-4">
                   <button
                     type="button"
@@ -423,6 +424,101 @@ const AdminPanel = () => {
               )}
             </div>
           </div>
+          {showEditModal && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-semibold text-gray-900">Edit Course</h3>
+                        <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <XCircle size={24} />
+                        </button>
+                    </div>
+                    <form onSubmit={handleUpdateCourse}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex flex-col">
+                                <label htmlFor="edit-course-code" className="text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                                <input
+                                    id="edit-course-code"
+                                    type="text"
+                                    name="code"
+                                    value={courseFormData.code}
+                                    onChange={handleFormChange}
+                                    className="px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
+                                    disabled
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="edit-course-name" className="text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                                <input
+                                    id="edit-course-name"
+                                    type="text"
+                                    name="name"
+                                    value={courseFormData.name}
+                                    onChange={handleFormChange}
+                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="edit-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
+                                <input
+                                    id="edit-course-price"
+                                    type="number"
+                                    name="price"
+                                    value={courseFormData.price}
+                                    onChange={handleFormChange}
+                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {courseFormData.price ? convertNumberToWords(courseFormData.price) : "ENTER A PRICE"}
+                                </p>
+                            </div>
+                            <div className="flex flex-col">
+                                <label htmlFor="edit-course-duration" className="text-sm font-medium text-gray-700 mb-1">Duration (Weeks)</label>
+                                <input
+                                    id="edit-course-duration"
+                                    type="number"
+                                    name="duration"
+                                    value={courseFormData.duration}
+                                    onChange={handleFormChange}
+                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                                {courseFormData.duration > 0 && (
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    This is a {courseFormData.duration * 7} day course.
+                                  </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex flex-col mt-4">
+                            <label htmlFor="edit-course-description" className="text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea
+                                id="edit-course-description"
+                                name="description"
+                                value={courseFormData.description}
+                                onChange={handleFormChange}
+                                rows="3"
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            ></textarea>
+                        </div>
+                        <div className="flex justify-end gap-2 mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setShowEditModal(false)}
+                                className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                            >
+                                Update Course
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+          )}
         </div>
       );
     } else if (currentView === 'days') {
