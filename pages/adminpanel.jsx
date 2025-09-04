@@ -10,15 +10,12 @@ const convertNumberToWords = (num) => {
   if (isNaN(num) || num === null || num === '') {
     return "";
   }
-  const a = ['', 'ONE ', 'TWO ', 'THREE ', 'FOUR ', 'FIVE ', 'SIX ', 'SEVEN ', 'EIGHT ', 'NINE ', 'TEN ', 'ELEVEN ', 'TWELVE ', 'THIRTEEN ', 'FOURTEEN ', 'FIFTEEN ', 'SIXTEEN ', 'SEVENTEEN ', 'EIGHTEEN ', 'NINETEEN '];
-  const b = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
-  const c = ['', 'HUNDRED', 'THOUSAND', 'LAKH', 'CRORE'];
+  const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+  const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const c = ['', 'hundred', 'thousand', 'lakh', 'crore'];
 
   const numString = String(num);
   let output = '';
-
-  const n = ('000000000' + numString).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-  if (!n) return '';
 
   const inWords = (m, place) => {
     let s = a[Number(m)];
@@ -30,13 +27,18 @@ const convertNumberToWords = (num) => {
     }
   };
 
+  const n = ('000000000' + numString).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return '';
+
   inWords(n[1], 4);
   inWords(n[2], 3);
   inWords(n[3], 2);
   inWords(n[4], 1);
   inWords(n[5], 0);
 
-  return output.replace(/\s+/g, ' ').trim() + " RUPEES";
+  const words = output.replace(/\s+/g, ' ').trim();
+  const titleCaseWords = words.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  return titleCaseWords + " Rupees";
 };
 
 // =========================================================================
@@ -98,9 +100,9 @@ const AdminPanel = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [courses, setCourses] = useState([
-    { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', price: 12999, duration: 8, studentsEnrolled: 45 },
-    { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', price: 9999, duration: 6, studentsEnrolled: 82 },
-    { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', price: 19999, duration: 12, studentsEnrolled: 60 },
+    { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45 },
+    { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82 },
+    { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60 },
   ]);
 
   const [courseFormData, setCourseFormData] = useState({
@@ -108,6 +110,7 @@ const AdminPanel = () => {
     code: '',
     name: '',
     description: '',
+    originalPrice: '',
     price: '',
     duration: '',
   });
@@ -152,12 +155,13 @@ const AdminPanel = () => {
     const courseToAdd = {
       id: newId,
       ...courseFormData,
+      originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
       price: parseFloat(courseFormData.price),
       duration: parseInt(courseFormData.duration),
       studentsEnrolled: 0,
     };
     setCourses(prevCourses => [...prevCourses, courseToAdd]);
-    setCourseFormData({ id: null, code: '', name: '', description: '', price: '', duration: '' });
+    setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
     setShowAddCourseForm(false);
     toast.success("Course added successfully!");
   };
@@ -172,11 +176,12 @@ const AdminPanel = () => {
       course.id === courseFormData.id ? {
         ...course,
         ...courseFormData,
+        originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
         price: parseFloat(courseFormData.price),
         duration: parseInt(courseFormData.duration),
       } : course
     ));
-    setCourseFormData({ id: null, code: '', name: '', description: '', price: '', duration: '' });
+    setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
     setIsEditing(false);
     setShowEditModal(false);
     toast.success("Course updated successfully!");
@@ -188,6 +193,7 @@ const AdminPanel = () => {
       code: course.code,
       name: course.name,
       description: course.description,
+      originalPrice: course.originalPrice,
       price: course.price,
       duration: course.duration,
     });
@@ -201,6 +207,7 @@ const AdminPanel = () => {
       ...course,
       id: newId,
       code: `${course.code}-DUPLICATE`,
+      name: `${course.name} (Duplicate)`,
     };
     setCourses(prevCourses => [...prevCourses, newCourse]);
     toast.success("Course duplicated successfully!");
@@ -253,7 +260,7 @@ const AdminPanel = () => {
                 onClick={() => {
                   setShowAddCourseForm(!showAddCourseForm);
                   setIsEditing(false);
-                  setCourseFormData({ code: '', name: '', description: '', price: '', duration: '' });
+                  setCourseFormData({ code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
                 }}
                 className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
               >
@@ -294,6 +301,18 @@ const AdminPanel = () => {
                     />
                   </div>
                   <div className="flex flex-col">
+                    <label htmlFor="original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
+                    <input
+                      id="original-price"
+                      type="number"
+                      name="originalPrice"
+                      value={courseFormData.originalPrice}
+                      onChange={handleFormChange}
+                      placeholder="e.g., 15000"
+                      className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div className="flex flex-col">
                     <label htmlFor="course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
                     <input
                       id="course-price"
@@ -305,7 +324,7 @@ const AdminPanel = () => {
                       className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {courseFormData.price ? convertNumberToWords(courseFormData.price) : "ENTER A PRICE"}
+                      {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
                     </p>
                   </div>
                   <div className="flex flex-col">
@@ -319,7 +338,7 @@ const AdminPanel = () => {
                       placeholder="e.g., 8"
                       className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
-                    {courseFormData.duration > 0 && (
+                     {courseFormData.duration > 0 && (
                       <p className="text-sm text-gray-500 mt-1">
                         This is a {courseFormData.duration * 7} day course.
                       </p>
@@ -344,7 +363,7 @@ const AdminPanel = () => {
                     onClick={() => {
                       setShowAddCourseForm(false);
                       setIsEditing(false);
-                      setCourseFormData({ code: '', name: '', description: '', price: '', duration: '' });
+                      setCourseFormData({ code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
                     }}
                     className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
                   >
@@ -393,7 +412,14 @@ const AdminPanel = () => {
                     <div className="mt-4 flex flex-wrap items-center text-sm text-gray-500">
                       <div className="flex items-center mr-4 mb-2">
                         <span className="mr-1">Price:</span>
-                        <span className="font-bold text-gray-700">₹{course.price.toLocaleString('en-IN')}</span>
+                        {course.originalPrice && course.originalPrice > course.price ? (
+                          <>
+                            <span className="font-bold text-gray-400 line-through mr-1">₹{course.originalPrice.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-gray-700">₹{course.price.toLocaleString('en-IN')}</span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-gray-700">₹{course.price.toLocaleString('en-IN')}</span>
+                        )}
                       </div>
                       <div className="flex items-center mr-4 mb-2">
                         <span className="mr-1">Duration:</span>
@@ -459,6 +485,17 @@ const AdminPanel = () => {
                                 />
                             </div>
                             <div className="flex flex-col">
+                                <label htmlFor="edit-original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
+                                <input
+                                    id="edit-original-price"
+                                    type="number"
+                                    name="originalPrice"
+                                    value={courseFormData.originalPrice}
+                                    onChange={handleFormChange}
+                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="flex flex-col">
                                 <label htmlFor="edit-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
                                 <input
                                     id="edit-course-price"
@@ -469,7 +506,7 @@ const AdminPanel = () => {
                                     className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    {courseFormData.price ? convertNumberToWords(courseFormData.price) : "ENTER A PRICE"}
+                                    {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
                                 </p>
                             </div>
                             <div className="flex flex-col">
