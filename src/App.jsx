@@ -5,7 +5,6 @@ import StudentPanel from "../pages/StudentPanel";
 import Vocabulary from "./forms/vocabulary";
 import Sentence from "./forms/Sentence";
 import Practice from "./forms/Practice";
-import Dayspage from "../pages/Dayspage";
 import Avatars from "../pages/Avatars";
 import StudentToAvatar from "./forms/StudentToAvatar";
 import AvatarToStudent from "./forms/AvatarToStudent";
@@ -16,7 +15,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<Dayspage />} />  {/* Landing Page */}
+        <Route index element={<AdminPanel />} />  {/* Landing Page */}
         <Route path="adminpanel" element={<AdminPanel />} />
         <Route path="studentpanel" element={<StudentPanel />} />
         <Route path="vocabulary" element={<Vocabulary />} />
