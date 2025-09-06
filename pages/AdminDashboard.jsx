@@ -1,3 +1,11 @@
+// =========================================================================
+// This file contains a full-stack React application for an Admin Dashboard,
+// including components for login, course management, instructor management,
+// and various module-specific forms. The components are all in a single
+// file for demonstration purposes.
+// =========================================================================
+
+// Import necessary React hooks and components
 import VocabularyForm from '../src/forms/vocabulary';
 import PracticeForm from '../src/forms/Practice';
 import QuizForm from '../src/forms/Quiz';
@@ -12,7 +20,11 @@ import {
   Handshake, ArrowRight, XCircle, GraduationCap, PlusCircle, Users, Pencil, Copy, Search, LogIn, LogOut, Bot, BookOpen, FileText, Dumbbell, ChevronRight, Menu, X
 } from 'lucide-react';
 
-// Helper function to convert a number to Indian Rupee words
+// =========================================================================
+// Helper Function: convertNumberToWords
+// =========================================================================
+// This function converts a numerical value into its Indian Rupee word format.
+// For example, 12999 becomes "Twelve Thousand Nine Hundred Ninety Nine Rupees".
 const convertNumberToWords = (num) => {
   if (isNaN(num) || num === null || num === '') {
     return "";
@@ -49,14 +61,10 @@ const convertNumberToWords = (num) => {
 };
 
 // =========================================================================
-// Below are the contents of the individual form files, now in a single file
+// Instructors Management Panel Component: InstructorsPanel
 // =========================================================================
-
-
-// New Avatars Panel Component
-
-
-// New Instructors Management Panel Component
+// This component provides the UI for an admin to manage instructors. It allows
+// for adding, deleting, and searching for instructors.
 const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor }) => {
   const [showAddInstructorForm, setShowAddInstructorForm] = useState(false);
   const [instructorFormData, setInstructorFormData] = useState({ name: '', email: '', mobile: '', loginEnabled: true });
@@ -80,10 +88,6 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
     // Simulate a backend API call
     console.log("Simulating backend API call to create instructor and send email invitation...");
     console.log("Data sent:", instructorFormData);
-
-    // In a real application, you would replace this with a fetch request
-    // const response = await fetch('/api/instructors', { method: 'POST', body: JSON.stringify(instructorFormData) });
-    // if (response.ok) { ... } else { ... }
 
     // On success, add the instructor to local state and show a toast
     handleAddInstructor(instructorFormData);
@@ -195,6 +199,7 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
         </div>
       )}
       
+      {/* Instructors Table */}
       <div className="w-full max-w-7xl">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -249,7 +254,11 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
   );
 };
 
-// Login Panel Component
+// =========================================================================
+// Login Panel Component: LoginPanel
+// =========================================================================
+// This component renders the login page for the admin and instructors. It handles
+// input fields for email and password and triggers the login authentication.
 const LoginPanel = ({ handleLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -340,6 +349,11 @@ const LoginPanel = ({ handleLogin }) => {
   );
 };
 
+// =========================================================================
+// Sidebar Component: Sidebar
+// =========================================================================
+// This component renders the main navigation sidebar. It shows different links
+// based on the user's role ('admin' or 'instructor').
 const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
   const navigation = [
     { name: 'Courses', icon: GraduationCap, view: 'courses', roles: ['admin', 'instructor'] },
@@ -385,7 +399,14 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
   );
 };
 
+// =========================================================================
+// Main Dashboard Component: AdminDashboard
+// =========================================================================
+// This is the primary component that manages the application state and renders
+// the appropriate view (login, courses, days, modules, etc.) based on the
+// user's authentication and navigation.
 const AdminDashboard = () => {
+  // State management for navigation and data
   const [currentView, setCurrentView] = useState('login'); // 'login', 'courses', 'days', 'modules', 'module-form', 'instructors', 'avatars'
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -395,6 +416,7 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userRole, setUserRole] = useState(null); // 'admin', 'instructor', null
 
+  // Mock data for courses and instructors
   const [courses, setCourses] = useState([
     { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45 },
     { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82 },
@@ -406,6 +428,7 @@ const AdminDashboard = () => {
     { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true },
   ]);
 
+  // Handlers for instructor management
   const handleAddInstructor = (newInstructorData) => {
     const newId = `instr-${Date.now()}`;
     setInstructors(prev => [...prev, { id: newId, ...newInstructorData }]);
@@ -417,6 +440,7 @@ const AdminDashboard = () => {
     toast.success("Instructor deleted successfully!");
   };
 
+  // State and handlers for course forms
   const [courseFormData, setCourseFormData] = useState({
     id: null,
     code: '',
@@ -430,6 +454,7 @@ const AdminDashboard = () => {
   const [courseSearchTerm, setCourseSearchTerm] = useState('');
   const [daySearchTerm, setDaySearchTerm] = useState('');
 
+  // Mock data for modules and their statuses
   const [moduleStates, setModuleStates] = useState([
     { title: "Vocabulary", content: "Manage and update the vocabulary module.", path: "/vocabulary", icon: ListTree, status: "Active", form: "VocabularyForm" },
     { title: "Sentence Pronunciation", content: "Manage and update the Sentence Pronounciation module.", path: "/sentence", icon: BrainCircuit, status: "Draft", form: "SentenceForm" },
@@ -439,6 +464,7 @@ const AdminDashboard = () => {
     { title: "Quiz", content: "Manage and update the Quiz Module.", path: "/quiz", icon: Settings, status: "Draft", form: "QuizForm" },
   ]);
 
+  // Authentication handlers
   const handleLogin = (email, password) => {
     if (email === "admin@erus.com" && password === "admin123") {
       setUserRole('admin');
@@ -459,6 +485,7 @@ const AdminDashboard = () => {
     toast.success("Logged out successfully!");
   };
 
+  // Navigation handlers
   const handleGoBack = () => {
     if (currentView === 'module-form') {
       setCurrentView('modules');
@@ -474,30 +501,32 @@ const AdminDashboard = () => {
     }
   };
 
+  // Course management handlers
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setCourseFormData(prev => ({ ...prev, [name]: value }));
   };
 
-const handleAddCourse = () => {
-  if (!courseFormData.name || !courseFormData.code || !courseFormData.price || !courseFormData.duration) {
-    toast.error("Please fill all required fields.");
-    return;
-  }
-  const newId = `course-${Date.now()}`;
-  const courseToAdd = {
-    id: newId,
-    ...courseFormData,
-    originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
-    price: parseFloat(courseFormData.price),
-    duration: parseInt(courseFormData.duration),
-    studentsEnrolled: 0,
+  const handleAddCourse = () => {
+    if (!courseFormData.name || !courseFormData.code || !courseFormData.price || !courseFormData.duration) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
+    const newId = `course-${Date.now()}`;
+    const courseToAdd = {
+      id: newId,
+      ...courseFormData,
+      originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
+      price: parseFloat(courseFormData.price),
+      duration: parseInt(courseFormData.duration),
+      studentsEnrolled: 0,
+    };
+    setCourses(prevCourses => [...prevCourses, courseToAdd]);
+    setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
+    setShowAddCourseForm(false);
+    toast.success("Course added successfully!");
   };
-  setCourses(prevCourses => [...prevCourses, courseToAdd]);
-  setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
-  setShowAddCourseForm(false);
-  toast.success("Course added successfully!");
-};
+
   const handleUpdateCourse = (e) => {
     e.preventDefault();
     if (!courseFormData.name || !courseFormData.code || !courseFormData.price || !courseFormData.duration) {
@@ -545,6 +574,7 @@ const handleAddCourse = () => {
     toast.success("Course duplicated successfully!");
   };
 
+  // Handler for toggling module status
   const handleModuleToggle = (moduleTitle) => {
     setModuleStates(prevModules =>
       prevModules.map(module =>
@@ -559,6 +589,12 @@ const handleAddCourse = () => {
     toast.success("Module status updated!");
   };
 
+  // =========================================================================
+  // View Rendering Logic
+  // =========================================================================
+  // This section uses conditional rendering to display the correct panel based
+  // on the `currentView` state. Each block corresponds to a different view
+  // within the dashboard (Courses, Days, Modules, etc.).
   const renderContent = () => {
     if (currentView === 'courses') {
       const filteredCourses = courses.filter(course =>
@@ -587,11 +623,11 @@ const handleAddCourse = () => {
                 />
               </div>
               <button
-             onClick={() => {
-  setShowAddCourseForm(true);
-  setIsEditing(false);
-  setCourseFormData({ code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
-}}
+                onClick={() => {
+                  setShowAddCourseForm(true);
+                  setIsEditing(false);
+                  setCourseFormData({ code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
+                }}
                 className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
               >
                 <PlusCircle size={16} />
@@ -599,116 +635,119 @@ const handleAddCourse = () => {
               </button>
             </div>
           </div>
-         {showAddCourseForm && (
-  <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full mx-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold text-gray-900">Add New Course</h3>
-        <button onClick={() => setShowAddCourseForm(false)} className="text-gray-400 hover:text-gray-600">
-          <XCircle size={24} />
-        </button>
-      </div>
-      <div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col">
-            <label htmlFor="add-course-code" className="text-sm font-medium text-gray-700 mb-1">Course Code</label>
-            <input
-              id="add-course-code"
-              type="text"
-              name="code"
-              value={courseFormData.code}
-              onChange={handleFormChange}
-              placeholder="e.g., ELM-101"
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="add-course-name" className="text-sm font-medium text-gray-700 mb-1">Course Name</label>
-            <input
-              id="add-course-name"
-              type="text"
-              name="name"
-              value={courseFormData.name}
-              onChange={handleFormChange}
-              placeholder="e.g., English Language Mastery"
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="add-original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
-            <input
-              id="add-original-price"
-              type="number"
-              name="originalPrice"
-              value={courseFormData.originalPrice}
-              onChange={handleFormChange}
-              placeholder="e.g., 15000"
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="add-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
-            <input
-              id="add-course-price"
-              type="number"
-              name="price"
-              value={courseFormData.price}
-              onChange={handleFormChange}
-              placeholder="e.g., 12999"
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
-            </p>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="add-course-duration" className="text-sm font-medium text-gray-700 mb-1">Duration (Weeks)</label>
-            <input
-              id="add-course-duration"
-              type="number"
-              name="duration"
-              value={courseFormData.duration}
-              onChange={handleFormChange}
-              placeholder="e.g., 8"
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {courseFormData.duration > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                This is a {courseFormData.duration * 7} day course.
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col mt-4">
-          <label htmlFor="add-course-description" className="text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
-            id="add-course-description"
-            name="description"
-            value={courseFormData.description}
-            onChange={handleFormChange}
-            placeholder="Provide a brief description of the course."
-            rows="3"
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          ></textarea>
-        </div>
-        <div className="flex justify-end gap-2 mt-6">
-          <button
-            onClick={() => setShowAddCourseForm(false)}
-            className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleAddCourse}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-          >
-            Save Course
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}<div className="w-full max-w-7xl flex-1">
+          {/* Add Course Form Modal */}
+          {showAddCourseForm && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full mx-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900">Add New Course</h3>
+                  <button onClick={() => setShowAddCourseForm(false)} className="text-gray-400 hover:text-gray-600">
+                    <XCircle size={24} />
+                  </button>
+                </div>
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label htmlFor="add-course-code" className="text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                      <input
+                        id="add-course-code"
+                        type="text"
+                        name="code"
+                        value={courseFormData.code}
+                        onChange={handleFormChange}
+                        placeholder="e.g., ELM-101"
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="add-course-name" className="text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                      <input
+                        id="add-course-name"
+                        type="text"
+                        name="name"
+                        value={courseFormData.name}
+                        onChange={handleFormChange}
+                        placeholder="e.g., English Language Mastery"
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="add-original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
+                      <input
+                        id="add-original-price"
+                        type="number"
+                        name="originalPrice"
+                        value={courseFormData.originalPrice}
+                        onChange={handleFormChange}
+                        placeholder="e.g., 15000"
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="add-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
+                      <input
+                        id="add-course-price"
+                        type="number"
+                        name="price"
+                        value={courseFormData.price}
+                        onChange={handleFormChange}
+                        placeholder="e.g., 12999"
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
+                      </p>
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="add-course-duration" className="text-sm font-medium text-gray-700 mb-1">Duration (Weeks)</label>
+                      <input
+                        id="add-course-duration"
+                        type="number"
+                        name="duration"
+                        value={courseFormData.duration}
+                        onChange={handleFormChange}
+                        placeholder="e.g., 8"
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      {courseFormData.duration > 0 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          This is a {courseFormData.duration * 7} day course.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col mt-4">
+                    <label htmlFor="add-course-description" className="text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      id="add-course-description"
+                      name="description"
+                      value={courseFormData.description}
+                      onChange={handleFormChange}
+                      placeholder="Provide a brief description of the course."
+                      rows="3"
+                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ></textarea>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-6">
+                    <button
+                      onClick={() => setShowAddCourseForm(false)}
+                      className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddCourse}
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                    >
+                      Save Course
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Course Cards Grid */}
+          <div className="w-full max-w-7xl flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.length > 0 ? (
                 filteredCourses.map((course) => (
@@ -719,7 +758,7 @@ const handleAddCourse = () => {
                       setCurrentView('days');
                     }}
                     className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col justify-between shadow-sm
-                      hover:ring-2 hover:ring-indigo-500 transition-all duration-300 ease-in-out cursor-pointer"
+                    hover:ring-2 hover:ring-indigo-500 transition-all duration-300 ease-in-out cursor-pointer"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex flex-col">
@@ -778,115 +817,117 @@ const handleAddCourse = () => {
               )}
             </div>
           </div>
+          {/* Edit Course Modal */}
           {showEditModal && (
             <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
-                <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-gray-900">Edit Course</h3>
-                        <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
-                            <XCircle size={24} />
-                        </button>
-                    </div>
-                    <form onSubmit={handleUpdateCourse}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="edit-course-code" className="text-sm font-medium text-gray-700 mb-1">Course Code</label>
-                                <input
-                                    id="edit-course-code"
-                                    type="text"
-                                    name="code"
-                                    value={courseFormData.code}
-                                    onChange={handleFormChange}
-                                    className="px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
-                                    disabled
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="edit-course-name" className="text-sm font-medium text-gray-700 mb-1">Course Name</label>
-                                <input
-                                    id="edit-course-name"
-                                    type="text"
-                                    name="name"
-                                    value={courseFormData.name}
-                                    onChange={handleFormChange}
-                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="edit-original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
-                                <input
-                                    id="edit-original-price"
-                                    type="number"
-                                    name="originalPrice"
-                                    value={courseFormData.originalPrice}
-                                    onChange={handleFormChange}
-                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="edit-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
-                                <input
-                                    id="edit-course-price"
-                                    type="number"
-                                    name="price"
-                                    value={courseFormData.price}
-                                    onChange={handleFormChange}
-                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
-                                </p>
-                            </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="edit-course-duration" className="text-sm font-medium text-gray-700 mb-1">Duration (Weeks)</label>
-                                <input
-                                    id="edit-course-duration"
-                                    type="number"
-                                    name="duration"
-                                    value={courseFormData.duration}
-                                    onChange={handleFormChange}
-                                    className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                                {courseFormData.duration > 0 && (
-                                  <p className="text-sm text-gray-500 mt-1">
-                                    This is a {courseFormData.duration * 7} day course.
-                                  </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex flex-col mt-4">
-                            <label htmlFor="edit-course-description" className="text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea
-                                id="edit-course-description"
-                                name="description"
-                                value={courseFormData.description}
-                                onChange={handleFormChange}
-                                rows="3"
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            ></textarea>
-                        </div>
-                        <div className="flex justify-end gap-2 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setShowEditModal(false)}
-                                className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-                            >
-                                Update Course
-                            </button>
-                        </div>
-                    </form>
+              <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900">Edit Course</h3>
+                  <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <XCircle size={24} />
+                  </button>
                 </div>
+                <form onSubmit={handleUpdateCourse}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label htmlFor="edit-course-code" className="text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                      <input
+                        id="edit-course-code"
+                        type="text"
+                        name="code"
+                        value={courseFormData.code}
+                        onChange={handleFormChange}
+                        className="px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
+                        disabled
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="edit-course-name" className="text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                      <input
+                        id="edit-course-name"
+                        type="text"
+                        name="name"
+                        value={courseFormData.name}
+                        onChange={handleFormChange}
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="edit-original-price" className="text-sm font-medium text-gray-700 mb-1">Original Price (INR)</label>
+                      <input
+                        id="edit-original-price"
+                        type="number"
+                        name="originalPrice"
+                        value={courseFormData.originalPrice}
+                        onChange={handleFormChange}
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="edit-course-price" className="text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
+                      <input
+                        id="edit-course-price"
+                        type="number"
+                        name="price"
+                        value={courseFormData.price}
+                        onChange={handleFormChange}
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {courseFormData.price ? convertNumberToWords(courseFormData.price) : "Enter a price"}
+                      </p>
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="edit-course-duration" className="text-sm font-medium text-gray-700 mb-1">Duration (Weeks)</label>
+                      <input
+                        id="edit-course-duration"
+                        type="number"
+                        name="duration"
+                        value={courseFormData.duration}
+                        onChange={handleFormChange}
+                        className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      {courseFormData.duration > 0 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          This is a {courseFormData.duration * 7} day course.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col mt-4">
+                    <label htmlFor="edit-course-description" className="text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      id="edit-course-description"
+                      name="description"
+                      value={courseFormData.description}
+                      onChange={handleFormChange}
+                      rows="3"
+                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ></textarea>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditModal(false)}
+                      className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                    >
+                      Update Course
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
         </div>
       );
     } else if (currentView === 'days') {
+      // Days View: shows a grid of days for the selected course
       const days = selectedCourse ? Array.from({ length: selectedCourse.duration * 7 }, (_, i) => `Day ${i + 1}`) : [];
       const filteredDays = days.filter(day =>
         day.toLowerCase().includes(daySearchTerm.toLowerCase())
@@ -951,6 +992,7 @@ const handleAddCourse = () => {
         </div>
       );
     } else if (currentView === 'modules') {
+      // Modules View: shows a grid of modules for the selected day
       return (
         <div className="flex-1 p-8">
           <Toaster position="top-right" reverseOrder={false} />
@@ -1040,6 +1082,8 @@ const handleAddCourse = () => {
         </div>
       );
     } else if (currentView === 'module-form') {
+      // Module Form View: dynamically renders the correct form component
+      // based on the selected module.
       const FormComponent = (() => {
         switch (selectedModule?.form) {
           case 'VocabularyForm':
@@ -1087,6 +1131,7 @@ const handleAddCourse = () => {
           </div>
       );
     } else if (currentView === 'instructors') {
+      // Instructors Panel View: Renders the Instructor management component.
       return (
         <InstructorsPanel
           instructors={instructors}
@@ -1095,10 +1140,12 @@ const handleAddCourse = () => {
         />
       );
     } else if (currentView === 'avatars') {
+      // Avatars Panel View: Renders the Avatar management component.
       return <AvatarsPanel />;
     }
   };
 
+  // Main render logic: shows LoginPanel if not authenticated, otherwise shows the dashboard UI.
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
       {userRole ? (

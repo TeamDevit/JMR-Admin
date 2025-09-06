@@ -205,16 +205,7 @@ const handleDownloadTemplate = () => {
       <div className="max-w-7xl mx-auto">
         {/* Navigation Header */}
         <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={handleBack}
-            className="group flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm
-                     border border-gray-200 rounded-xl shadow-sm hover:shadow-md
-                     transition-all duration-300 hover:bg-white hover:-translate-y-0.5
-                     active:translate-y-0 active:scale-95"
-          >
-            <ArrowLeftIcon className="group-hover:-translate-x-0.5 transition-transform" />
-            <span className="font-medium text-gray-700">Back</span>
-          </button>
+        
 
           <button
             onClick={handleDownloadTemplate}
