@@ -17,9 +17,13 @@ const LoginPanel = ({ handleLogin }) => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 bg-indigo-600 rounded-lg shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">EA</span>
-            </div>
+            
+              <img
+                className="h-10 w-auto rounded-lg shadow-md"
+                src="src/assets/erus.jpg"
+                alt="Erus Academy Logo"
+              />
+            
           </div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
             Erus Academy
