@@ -7,7 +7,7 @@ const CourseForm = ({ setShowAddCourseForm, courseFormData, handleFormChange, ha
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-8 shadow-xl max-w-2xl w-full mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">Add New Course</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Edit New Course</h3>
           <button onClick={() => setShowAddCourseForm(false)} className="text-gray-400 hover:text-gray-600">
             <XCircle size={24} />
           </button>

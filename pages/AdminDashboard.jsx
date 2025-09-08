@@ -14,8 +14,6 @@ import ModulesView from '../src/components/ModulesView';
 import ModuleFormView from '../src/components/ModuleFormView';
 import Avatars from "./Avatars";
 
-import MainDashboard from "../src/components/MainDashboard";
-import CourseDashboard from "../src/components/CourseDashboard";
 const AdminDashboard = () => {
   // State management for navigation and data
   const [currentView, setCurrentView] = useState('login');
@@ -46,9 +44,18 @@ const AdminDashboard = () => {
     toast.success("Instructor added successfully! An invitation email has been sent.");
   };
 
-  const handleDeleteInstructor = (email) => {
-    setInstructors(prev => prev.filter(i => i.email !== email));
+  const handleDeleteInstructor = (id) => {
+    setInstructors(prev => prev.filter(i => i.id !== id));
     toast.success("Instructor deleted successfully!");
+  };
+  
+  const handleUpdateInstructor = (updatedInstructor) => {
+    setInstructors(prev =>
+      prev.map(instr =>
+        instr.id === updatedInstructor.id ? { ...instr, ...updatedInstructor } : instr
+      )
+    );
+    toast.success("Instructor updated successfully!");
   };
 
   // State and handlers for course forms
@@ -61,7 +68,7 @@ const AdminDashboard = () => {
     price: '',
     duration: '',
   });
-  
+
   const [courseSearchTerm, setCourseSearchTerm] = useState('');
   const [daySearchTerm, setDaySearchTerm] = useState('');
 
@@ -194,9 +201,9 @@ const AdminDashboard = () => {
       prevModules.map(module =>
         module.title === moduleTitle
           ? {
-              ...module,
-              status: module.status === 'Active' ? 'Draft' : 'Active',
-            }
+            ...module,
+            status: module.status === 'Active' ? 'Draft' : 'Active',
+          }
           : module
       )
     );
@@ -206,10 +213,10 @@ const AdminDashboard = () => {
   // View rendering logic
   const renderContent = () => {
     switch (currentView) {
-        case 'dashboard':
-      return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
-    case 'course-dashboard':
-      return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
+      case 'dashboard':
+        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+      case 'course-dashboard':
+        return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
       case 'courses':
         return (
           <CoursesView
@@ -266,11 +273,13 @@ const AdminDashboard = () => {
           <InstructorsPanel
             instructors={instructors}
             handleAddInstructor={handleAddInstructor}
+            handleUpdateInstructor={handleUpdateInstructor}
             handleDeleteInstructor={handleDeleteInstructor}
+            userRole={userRole}
           />
         );
-   case 'avatars':
-  return <Avatars handleLogout={handleLogout} />;
+      case 'avatars':
+        return <Avatars handleLogout={handleLogout} />;
       default:
         return null;
     }

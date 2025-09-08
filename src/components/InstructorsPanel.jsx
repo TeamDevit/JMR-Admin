@@ -1,37 +1,30 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import toast, { Toaster } from "react-hot-toast";
-import { Search, PlusCircle } from 'lucide-react';
+import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import AddEditUserForm from '../forms/AddEditUserForm';
 
-const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor }) => {
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
-  const [userFormData, setUserFormData] = useState({ 
-    name: '', 
-    email: '', 
-    designation: '', 
-    loginEnabled: true, 
-    role: 'instructor',
-    coursesCreated: 0
-  });
+const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor, userRole, handleUpdateInstructor }) => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
-  const handleFormChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setUserFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  const handleEdit = (user) => {
+    setUserToEdit(user);
+    setIsFormOpen(true);
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    if (!userFormData.name || !userFormData.email) {
-      toast.error("Employee Name and Email are required.");
-      return;
+  const handleAdd = () => {
+    setUserToEdit(null);
+    setIsFormOpen(true);
+  };
+
+  const handleSubmit = (formData) => {
+    if (userToEdit) {
+      handleUpdateInstructor(formData);
+    } else {
+      handleAddInstructor(formData);
     }
-    
-    handleAddInstructor(userFormData);
-    setUserFormData({ name: '', email: '', designation: '', loginEnabled: true, role: 'instructor', coursesCreated: 0 });
-    setShowAddUserForm(false);
+    setIsFormOpen(false); // Close the form after submission
   };
 
   const filteredUsers = instructors.filter(user =>
@@ -57,101 +50,17 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
               className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          <button
-            onClick={() => setShowAddUserForm(!showAddUserForm)}
-            className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
-          >
-            <PlusCircle size={16} />
-            <span>Add User</span>
-          </button>
+          {userRole === 'admin' && (
+            <button
+              onClick={handleAdd}
+              className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
+            >
+              <PlusCircle size={16} />
+              <span>Add User</span>
+            </button>
+          )}
         </div>
       </div>
-
-      {showAddUserForm && (
-        <div className="w-full max-w-3xl bg-white p-6 rounded-lg shadow-lg mb-8 mx-auto">
-          <h3 className="text-xl font-semibold mb-4">Add New User</h3>
-          <form onSubmit={handleFormSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label htmlFor="user-name" className="text-sm font-medium text-gray-700 mb-1">Employee Name</label>
-                <input
-                  id="user-name"
-                  type="text"
-                  name="name"
-                  value={userFormData.name}
-                  onChange={handleFormChange}
-                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="user-email" className="text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input
-                  id="user-email"
-                  type="email"
-                  name="email"
-                  value={userFormData.email}
-                  onChange={handleFormChange}
-                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="user-designation" className="text-sm font-medium text-gray-700 mb-1">Designation</label>
-                <input
-                  id="user-designation"
-                  type="text"
-                  name="designation"
-                  value={userFormData.designation}
-                  onChange={handleFormChange}
-                  placeholder="e.g., Senior Instructor, Course Creator"
-                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="user-role" className="text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  id="user-role"
-                  name="role"
-                  value={userFormData.role}
-                  onChange={handleFormChange}
-                  className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="instructor">Instructor</option>
-                  <option value="admin">Admin</option>
-                  <option value="super-admin">Super Admin</option>
-                </select>
-              </div>
-              <div className="flex items-center space-x-2 mt-6">
-                <input
-                  id="login-access"
-                  type="checkbox"
-                  name="loginEnabled"
-                  checked={userFormData.loginEnabled}
-                  onChange={handleFormChange}
-                  className="w-4 h-4 text-indigo-600 bg-gray-100 rounded border-gray-300 focus:ring-indigo-500"
-                />
-                <label htmlFor="login-access" className="text-sm font-medium text-gray-700">Login Access</label>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => setShowAddUserForm(false)}
-                className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              >
-                Save User
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
       
       <div className="w-full max-w-7xl">
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -184,7 +93,7 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user, index) => (
-                  <tr key={index}>
+                  <tr key={user.id || index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.designation || 'Not specified'}</td>
@@ -195,18 +104,29 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'super-admin' ? 'bg-purple-100 text-purple-800' : 
-                        user.role === 'admin' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-gray-100 text-gray-800'
+                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {user.role === 'super-admin' ? 'SUPER ADMIN' : 
-                         user.role === 'admin' ? 'ADMIN' : 'INSTRUCTOR'}
+                        {user.role === 'admin' ? 'ADMIN' : 'INSTRUCTOR'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.coursesCreated || 0}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      <button className="text-indigo-600 hover:text-indigo-900">Edit Employee</button>
-                      <button onClick={() => handleDeleteInstructor(user.email)} className="text-red-600 hover:text-red-900">Delete</button>
+                      {userRole === 'admin' && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteInstructor(user.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -219,6 +139,14 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
           </table>
         </div>
       </div>
+
+      {isFormOpen && (
+        <AddEditUserForm
+          user={userToEdit}
+          onSubmit={handleSubmit}
+          onClose={() => setIsFormOpen(false)}
+        />
+      )}
     </div>
   );
 };
