@@ -100,9 +100,16 @@ const CoursesView = ({
 
                   {userRole === 'admin' && (
                     <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => handleEditCourse(course)} className="p-2 text-gray-500 hover:text-indigo-600 rounded-full transition-colors">
-                        <Pencil size={18} />
-                      </button>
+                      <button
+  onClick={() => {
+    setShowAddCourseForm(true);
+    handleEditCourse(course);
+  }}
+  className="p-2 text-gray-500 hover:text-indigo-600 rounded-full transition-colors"
+>
+  <Pencil size={18} />
+</button>
+
                       <button onClick={() => handleDuplicateCourse(course)} className="p-2 text-gray-500 hover:text-indigo-600 rounded-full transition-colors">
                         <Copy size={18} />
                       </button>
