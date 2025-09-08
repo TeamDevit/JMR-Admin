@@ -13,7 +13,8 @@ import DaysView from '../src/components/DaysView';
 import ModulesView from '../src/components/ModulesView';
 import ModuleFormView from '../src/components/ModuleFormView';
 import Avatars from "./Avatars";
-
+import MainDashboard from "../src/components/MainDashboard";
+import CourseDashboard from "../src/components/CourseDashboard";
 const AdminDashboard = () => {
   // State management for navigation and data
   const [currentView, setCurrentView] = useState('login');
