@@ -50,24 +50,7 @@ const Avatars = ({ handleLogout }) => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar with Logout */}
-      <div className="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center space-x-2 mb-8">
-            <div className="h-10 w-10 bg-indigo-600 rounded-lg shadow-md flex items-center justify-center">
-              <span className="text-white font-bold text-sm">EA</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">Erus Academy</span>
-          </div>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
-        >
-          <LogOut size={20} />
-          <span>Logout</span>
-        </button>
-      </div>
+  
 
       {/* Main Content */}
       <div className="flex-1 p-8">
