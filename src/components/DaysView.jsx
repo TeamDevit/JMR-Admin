@@ -1,5 +1,5 @@
-import React from "react";
-import { ArrowRight, Search } from 'lucide-react';
+import React, { useState } from "react";
+import { ArrowRight, Search, Plus } from "lucide-react";
 
 const DaysView = ({ 
   selectedCourse, 
@@ -26,9 +26,12 @@ const DaysView = ({
     );
   }
 
-  const duration = selectedCourse.duration || 8;
-  const days = Array.from({ length: duration * 7 }, (_, i) => `Day ${i + 1}`);
-  
+  // Instead of fixed days, manage dynamically
+  const initialDuration = selectedCourse.duration || 8;
+  const [days, setDays] = useState(
+    Array.from({ length: initialDuration * 7 }, (_, i) => `Day ${i + 1}`)
+  );
+
   const filteredDays = days.filter(day =>
     day.toLowerCase().includes((daySearchTerm || "").toLowerCase())
   );
@@ -36,22 +39,30 @@ const DaysView = ({
   const handleDayClick = (day) => {
     if (setSelectedDay && setCurrentView) {
       setSelectedDay(day);
-      setCurrentView('modules');
+      setCurrentView("modules");
     }
   };
 
-  // Function to get realistic day data - replace this with real data later
+  const handleAddDay = () => {
+    const newDayNumber = days.length + 1;
+    setDays([...days, `Day ${newDayNumber}`]);
+    setSelectedDay(`Day ${newDayNumber}`);
+    setCurrentView("modules");
+  };
+
+  // Fake data function (replace later with real API)
   const getDayData = (dayIndex) => {
     const totalModules = 6;
-    // More realistic progression - early days have fewer modules
-    const enabledModules = Math.min(totalModules, Math.max(0, Math.floor(dayIndex / 7) + Math.floor(Math.random() * 3) + 1));
-    // Go Live status - only if enough modules enabled
+    const enabledModules = Math.min(
+      totalModules,
+      Math.max(0, Math.floor(dayIndex / 7) + Math.floor(Math.random() * 3) + 1)
+    );
     const hasGoneLive = enabledModules >= 4 && Math.random() > 0.3;
-    
+
     return {
       totalModules,
       enabledModules,
-      isLive: hasGoneLive
+      isLive: hasGoneLive,
     };
   };
 
@@ -91,20 +102,28 @@ const DaysView = ({
 
       {/* Days Grid */}
       <div className="w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {/* ➕ Add New Day / Module Card */}
+        <div
+          onClick={handleAddDay}
+          className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-indigo-400 rounded-lg bg-white hover:bg-indigo-50 cursor-pointer transition-all duration-300"
+        >
+          <Plus size={32} className="text-indigo-600 mb-2" />
+          <span className="text-indigo-600 font-semibold">Add Day</span>
+        </div>
+
         {filteredDays.length > 0 ? (
           filteredDays.map((day, index) => {
-            // Get realistic data for this day
             const dayData = getDayData(index);
             const { totalModules, enabledModules, isLive } = dayData;
             const progressPercentage = (enabledModules / totalModules) * 100;
-            
+
             return (
               <div
                 key={`${day}-${index}`}
                 onClick={() => handleDayClick(day)}
                 className="relative bg-white rounded-lg border border-gray-200 p-6 flex flex-col justify-between items-center shadow-sm hover:ring-2 hover:ring-indigo-500 transition-all duration-300 ease-in-out cursor-pointer hover:shadow-md"
               >
-                {/* Status Badge - Top Corner */}
+                {/* Status Badge */}
                 <div className="absolute top-3 right-3">
                   {isLive ? (
                     <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full border border-green-200">
@@ -121,21 +140,24 @@ const DaysView = ({
                 <div className="p-3 mb-3 w-12 h-12 flex items-center justify-center rounded-full bg-indigo-500 text-white font-bold text-lg">
                   {index + 1}
                 </div>
-                
+
                 {/* Day Title */}
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">{day}</h3>
-                
-                {/* Module Status Section */}
+
+                {/* Module Status */}
                 <div className="w-full text-center space-y-3">
-                  {/* Module Count */}
                   <div className="text-sm text-gray-600">
-                    Modules: <span className="font-semibold text-indigo-600">{enabledModules}/{totalModules}</span> enabled
+                    Modules:{" "}
+                    <span className="font-semibold text-indigo-600">
+                      {enabledModules}/{totalModules}
+                    </span>{" "}
+                    enabled
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-indigo-600 h-2 rounded-full transition-all duration-300" 
+                    <div
+                      className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${progressPercentage}%` }}
                     ></div>
                   </div>

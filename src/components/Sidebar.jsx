@@ -1,49 +1,96 @@
-import React from "react";
-import { GraduationCap, Bot, Users, LogOut, BarChart3 } from 'lucide-react';
+import React, { useState } from "react";
+import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X } from "lucide-react";
 
 const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
-const navigation = [
-  { name: 'Dashboard', icon: BarChart3, view: 'dashboard', roles: ['admin', 'instructor'] }, // Add this
-  { name: 'Courses', icon: GraduationCap, view: 'courses', roles: ['admin', 'instructor'] },
-  { name: 'Avatars', icon: Bot, view: 'avatars', roles: ['admin', 'instructor'] },
-  { name: 'Users', icon: Users, view: 'instructors', roles: ['admin'] },
-];
+  const [isOpen, setIsOpen] = useState(false);
 
-  const allowedNavigation = navigation.filter(item => item.roles.includes(userRole));
+  const navigation = [
+    { name: "Dashboard", icon: BarChart3, view: "dashboard", roles: ["admin", "instructor"] },
+    { name: "Courses", icon: GraduationCap, view: "courses", roles: ["admin", "instructor"] },
+    { name: "Avatars", icon: Bot, view: "avatars", roles: ["admin", "instructor"] },
+    { name: "Users", icon: Users, view: "instructors", roles: ["admin"] },
+  ];
+
+  const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));
 
   return (
-    <div className="w-64 bg-white shadow-lg p-6 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center space-x-2 mb-8">
-          <img
-            className="h-10 w-auto rounded-lg shadow-md"
-            src="src\assets\erus.jpg"
-            alt="Erus Academy Logo"
-          />
-          <span className="text-xl font-bold text-gray-900">Erus Academy</span>
-        </div>
-        <nav className="space-y-2">
-          {allowedNavigation.map((item) => (
-            <button
-              key={item.view}
-              onClick={() => setCurrentView(item.view)}
-              className={`flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200
-                ${currentView === item.view ? 'bg-indigo-100 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'}`}
-            >
-              <item.icon size={20} />
-              <span>{item.name}</span>
-            </button>
-          ))}
-        </nav>
-      </div>
-      <button
-        onClick={handleLogout}
-        className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
+    <>
+      {/* Floating Toggle Button (mobile only, before sidebar opens) */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-md text-gray-600 hover:text-indigo-600"
+        >
+          <Menu size={24} />
+        </button>
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`fixed md:static top-0 left-0 h-full md:h-auto w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
+        ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        <LogOut size={20} />
-        <span>Logout</span>
-      </button>
-    </div>
+        <div>
+          {/* Top Section: Logo + Close button (mobile) */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <img
+                className="h-10 w-auto rounded-lg shadow-md"
+                src="src/assets/erus.jpg"
+                alt="Erus Academy Logo"
+              />
+              <span className="text-xl font-bold text-gray-900">Erus Academy</span>
+            </div>
+            {/* Close button (only mobile) */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="md:hidden text-gray-600 hover:text-indigo-600"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Nav Items */}
+          <nav className="space-y-2">
+            {allowedNavigation.map((item) => (
+              <button
+                key={item.view}
+                onClick={() => {
+                  setCurrentView(item.view);
+                  setIsOpen(false); // auto close on mobile
+                }}
+                className={`flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200
+                ${
+                  currentView === item.view
+                    ? "bg-indigo-100 text-indigo-700 font-semibold"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <item.icon size={20} />
+                <span>{item.name}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
+        >
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      {/* Background overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
