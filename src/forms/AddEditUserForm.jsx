@@ -7,9 +7,11 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
     id: '',
     name: '',
     email: '',
+    mobile: '',
     designation: '',
     loginEnabled: true,
     role: 'instructor',
+    password: ''
   });
 
   useEffect(() => {
@@ -18,9 +20,11 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
         id: user.id || '',
         name: user.name || '',
         email: user.email || '',
+        mobile: user.mobile || '',
         designation: user.designation || '',
         loginEnabled: user.loginEnabled || true,
         role: user.role || 'instructor',
+        password: '' // Don't pre-fill password for security
       });
     }
   }, [user]);
@@ -35,11 +39,12 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      toast.error('Employee Name and Email are required.');
+    if (!formData.name || !formData.email || !formData.mobile) {
+      toast.error('Employee Name, Email, and Mobile are required.');
       return;
     }
     onSubmit(formData);
+    onClose();
   };
 
   return (
@@ -80,6 +85,19 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
             />
           </div>
           <div>
+            <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">Mobile Number</label>
+            <input
+              type="tel"
+              id="mobile"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleChange}
+              placeholder="e.g., 9876543210"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+              required
+            />
+          </div>
+          <div>
             <label htmlFor="designation" className="block text-sm font-medium text-gray-700">Designation</label>
             <input
               type="text"
@@ -104,7 +122,7 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
               <option value="admin">Admin</option>
             </select>
           </div>
-          <div className="flex items-center space-x-2 mt-6">
+          <div className="flex items-center space-x-2">
             <input
               type="checkbox"
               id="loginEnabled"
@@ -115,6 +133,20 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
             />
             <label htmlFor="loginEnabled" className="text-sm font-medium text-gray-700">Login Access</label>
           </div>
+          {!user && (
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+                required={!user}
+              />
+            </div>
+          )}
           <div className="flex justify-end space-x-3 mt-6">
             <button
               type="button"

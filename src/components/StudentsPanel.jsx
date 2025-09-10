@@ -1,42 +1,42 @@
 import React, { useState } from 'react';
-import toast, { Toaster } from "react-hot-toast";
+import toast, { Toaster } from 'react-hot-toast';
 import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import AddEditUserForm from '../forms/AddEditUserForm';
+import AddEditStudentForm from '../forms/AddEditStudentForm';
 
-const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor, userRole, handleUpdateInstructor }) => {
+const StudentsPanel = ({ students, courses, handleAddStudent, handleUpdateStudent, handleDeleteStudent, userRole }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [userToEdit, setUserToEdit] = useState(null);
-  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [studentToEdit, setStudentToEdit] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleEdit = (user) => {
-    setUserToEdit(user);
+  const handleEdit = (student) => {
+    setStudentToEdit(student);
     setIsFormOpen(true);
   };
 
   const handleAdd = () => {
-    setUserToEdit(null);
+    setStudentToEdit(null);
     setIsFormOpen(true);
   };
 
   const handleSubmit = (formData) => {
-    if (userToEdit) {
-      handleUpdateInstructor(formData);
+    if (studentToEdit) {
+      handleUpdateStudent(formData);
     } else {
-      handleAddInstructor(formData);
+      handleAddStudent(formData);
     }
-    setIsFormOpen(false); // Close the form after submission
+    setIsFormOpen(false);
   };
 
-  const filteredUsers = instructors.filter(user =>
-    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="flex-1 p-8">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="w-full max-w-7xl flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-700">User Management</h2>
+        <h2 className="text-2xl font-semibold text-gray-700">Student Management</h2>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -44,9 +44,9 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
             </div>
             <input
               type="text"
-              placeholder="Employee Name"
-              value={userSearchTerm}
-              onChange={(e) => setUserSearchTerm(e.target.value)}
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -56,7 +56,7 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
               className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
             >
               <PlusCircle size={16} />
-              <span>Add User</span>
+              <span>Add Student</span>
             </button>
           )}
         </div>
@@ -68,25 +68,19 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee Name
+                  Student Name
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email Address
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mobile Number
+                  Courses
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Designation
+                  Progress
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Login Access
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Courses Created
+                  Grade
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -94,37 +88,39 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user, index) => (
-                  <tr key={user.id || index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.mobile || 'Not specified'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.designation || 'Not specified'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.loginEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {user.loginEnabled ? 'LOGIN ENABLED' : 'LOGIN DISABLED'}
-                      </span>
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student, index) => (
+                  <tr key={student.id || index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.courses.map(courseCode => {
+                        const course = courses.find(c => c.code === courseCode);
+                        return course ? (
+                          <span key={courseCode} className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 mr-2">
+                            {course.name}
+                          </span>
+                        ) : null;
+                      })}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {user.role === 'admin' ? 'ADMIN' : 'INSTRUCTOR'}
-                      </span>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                        <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${student.progress}%` }}></div>
+                      </div>
+                      <span className="text-xs text-gray-500 mt-1">{student.progress}%</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.coursesCreated || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       {userRole === 'admin' && (
                         <>
                           <button
-                            onClick={() => handleEdit(user)}
+                            onClick={() => handleEdit(student)}
                             className="text-indigo-600 hover:text-indigo-900"
                           >
                             <Pencil size={18} />
                           </button>
                           <button
-                            onClick={() => handleDeleteInstructor(user.id)}
+                            onClick={() => handleDeleteStudent(student.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             <Trash2 size={18} />
@@ -136,7 +132,7 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">No users found.</td>
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">No students found.</td>
                 </tr>
               )}
             </tbody>
@@ -145,8 +141,9 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
       </div>
 
       {isFormOpen && (
-        <AddEditUserForm
-          user={userToEdit}
+        <AddEditStudentForm
+          student={studentToEdit}
+          courses={courses}
           onSubmit={handleSubmit}
           onClose={() => setIsFormOpen(false)}
         />
@@ -154,5 +151,4 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
     </div>
   );
 };
-
-export default InstructorsPanel;
+export default StudentsPanel;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X } from "lucide-react";
+import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X, Gift, Bell, User2 } from "lucide-react";
 
 const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,6 +9,9 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
     { name: "Courses", icon: GraduationCap, view: "courses", roles: ["admin", "instructor"] },
     { name: "Avatars", icon: Bot, view: "avatars", roles: ["admin", "instructor"] },
     { name: "Users", icon: Users, view: "instructors", roles: ["admin"] },
+    { name: "Students", icon: User2, view: "students", roles: ["admin", "instructor"] },
+    { name: "Announcements", icon: Bell, view: "announcements", roles: ["admin", "instructor"] },
+    { name: "Referrals", icon: Gift, view: "referrals", roles: ["admin"] },
   ];
 
   const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));

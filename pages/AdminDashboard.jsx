@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 import {
   ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake
 } from 'lucide-react';
-
 // Import components
 import LoginPanel from '../src/components/LoginPanel';
 import Sidebar from '../src/components/Sidebar';
@@ -15,6 +14,10 @@ import ModuleFormView from '../src/components/ModuleFormView';
 import Avatars from "./Avatars";
 import MainDashboard from "../src/components/MainDashboard";
 import CourseDashboard from "../src/components/CourseDashboard";
+import ReferralsView from '../src/components/ReferralsView'; // New import for the referrals component
+  
+import StudentsPanel from '../src/components/StudentsPanel';    // New import for student management
+import AnnouncementsView from '../src/components/AnnouncementsView';
 const AdminDashboard = () => {
   // State management for navigation and data
   const [currentView, setCurrentView] = useState('login');
@@ -26,37 +29,72 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
-  // Mock data for courses and instructors
+  // Mock data for courses, instructors, students, and announcements
   const [courses, setCourses] = useState([
     { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45 },
     { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82 },
     { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60 },
   ]);
-
+  
   const [instructors, setInstructors] = useState([
-    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true },
-    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true },
+    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true, role: 'admin', referralCode: 'JANE10', referredStudents: 10, commissionEarned: 5000  },
+    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true, role: 'instructor', referralCode: 'JOHN20', referredStudents: 25, commissionEarned: 12500  },
+  ]);
+  
+  const [students, setStudents] = useState([
+    { id: 'student-1', name: 'Alice Johnson', email: 'alice@student.com', courses: ['ELM-101'], progress: 75, grade: 92 },
+    { id: 'student-2', name: 'Bob Williams', email: 'bob@student.com', courses: ['CS-201'], progress: 50, grade: 85 },
+    { id: 'student-3', name: 'Charlie Brown', email: 'charlie@student.com', courses: ['ELM-101', 'DSF-301'], progress: 95, grade: 98 },
+  ]);
+
+  const [announcements, setAnnouncements] = useState([
+    { id: 'ann-1', title: 'Welcome to the new semester!', content: 'We are excited to have you all on board. Let the learning begin!', date: '2023-10-27' },
+    { id: 'ann-2', title: 'Maintenance Window', content: 'Our servers will be down for maintenance on 2023-11-05 from 2AM to 4AM.', date: '2023-10-25' },
   ]);
 
   // Handlers for instructor management
   const handleAddInstructor = (newInstructorData) => {
     const newId = `instr-${Date.now()}`;
-    setInstructors(prev => [...prev, { id: newId, ...newInstructorData }]);
-    toast.success("Instructor added successfully! An invitation email has been sent.");
+    setInstructors(prev => [...prev, { id: newId, ...newInstructorData, coursesCreated: 0, referredStudents: 0, commissionEarned: 0 }]);
+    toast.success("Instructor added successfully!");
   };
 
-  const handleDeleteInstructor = (id) => {
-    setInstructors(prev => prev.filter(i => i.id !== id));
+  const handleUpdateInstructor = (updatedUserData) => {
+    setInstructors(prev => prev.map(user =>
+      user.id === updatedUserData.id ? { ...user, ...updatedUserData } : user
+    ));
+    toast.success("User updated successfully!");
+  };
+
+  const handleDeleteInstructor = (userId) => {
+    setInstructors(prev => prev.filter(user => user.id !== userId));
     toast.success("Instructor deleted successfully!");
   };
-  
-  const handleUpdateInstructor = (updatedInstructor) => {
-    setInstructors(prev =>
-      prev.map(instr =>
-        instr.id === updatedInstructor.id ? { ...instr, ...updatedInstructor } : instr
-      )
-    );
-    toast.success("Instructor updated successfully!");
+
+  // Handlers for student management
+  const handleAddStudent = (newStudentData) => {
+    const newId = `student-${Date.now()}`;
+    setStudents(prev => [...prev, { id: newId, ...newStudentData }]);
+    toast.success("Student added successfully!");
+  };
+
+  const handleUpdateStudent = (updatedStudentData) => {
+    setStudents(prev => prev.map(student =>
+      student.id === updatedStudentData.id ? { ...student, ...updatedStudentData } : student
+    ));
+    toast.success("Student updated successfully!");
+  };
+
+  const handleDeleteStudent = (studentId) => {
+    setStudents(prev => prev.filter(student => student.id !== studentId));
+    toast.success("Student deleted successfully!");
+  };
+
+  // Handlers for announcements
+  const handleAddAnnouncement = (newAnnouncement) => {
+    const newId = `ann-${Date.now()}`;
+    setAnnouncements(prev => [{ id: newId, ...newAnnouncement, date: new Date().toISOString().split('T')[0] }, ...prev]);
+    toast.success("Announcement created successfully!");
   };
 
   // State and handlers for course forms
@@ -68,8 +106,9 @@ const AdminDashboard = () => {
     originalPrice: '',
     price: '',
     duration: '',
+    razorpayKey: '', // Added for Razorpay integration
   });
-
+  
   const [courseSearchTerm, setCourseSearchTerm] = useState('');
   const [daySearchTerm, setDaySearchTerm] = useState('');
 
@@ -118,7 +157,7 @@ const AdminDashboard = () => {
     } else if (currentView === 'days') {
       setCurrentView('courses');
       setSelectedCourse(null);
-    } else if (currentView === 'instructors' || currentView === 'avatars') {
+    } else if (currentView === 'instructors' || currentView === 'avatars' || currentView === 'referrals' || currentView === 'students' || currentView === 'announcements') {
       setCurrentView('courses');
     }
   };
@@ -129,44 +168,46 @@ const AdminDashboard = () => {
     setCourseFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddCourse = () => {
-    if (!courseFormData.name || !courseFormData.code || !courseFormData.price || !courseFormData.duration) {
+  const handleAddCourse = (formData) => {
+    const { name, code, price, duration, description, originalPrice, razorpayKey } = formData;
+    if (!name || !code || !price || !duration) {
       toast.error("Please fill all required fields.");
       return;
     }
     const newId = `course-${Date.now()}`;
     const courseToAdd = {
       id: newId,
-      ...courseFormData,
-      originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
-      price: parseFloat(courseFormData.price),
-      duration: parseInt(courseFormData.duration),
+      name,
+      code,
+      description,
+      originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+      price: parseFloat(price),
+      duration: parseInt(duration),
+      razorpayKey,
       studentsEnrolled: 0,
     };
     setCourses(prevCourses => [...prevCourses, courseToAdd]);
-    setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
-    setShowAddCourseForm(false);
     toast.success("Course added successfully!");
   };
 
-  const handleUpdateCourse = (e) => {
-    e.preventDefault();
-    if (!courseFormData.name || !courseFormData.code || !courseFormData.price || !courseFormData.duration) {
+  const handleUpdateCourse = (formData) => {
+    const { name, code, price, duration, description, originalPrice, razorpayKey } = formData;
+    if (!name || !code || !price || !duration) {
       toast.error("Please fill all required fields.");
       return;
     }
     setCourses(prevCourses => prevCourses.map(course =>
-      course.id === courseFormData.id ? {
+      course.id === formData.id ? {
         ...course,
-        ...courseFormData,
-        originalPrice: courseFormData.originalPrice ? parseFloat(courseFormData.originalPrice) : null,
-        price: parseFloat(courseFormData.price),
-        duration: parseInt(courseFormData.duration),
+        name,
+        code,
+        description,
+        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+        price: parseFloat(price),
+        duration: parseInt(duration),
+        razorpayKey,
       } : course
     ));
-    setCourseFormData({ id: null, code: '', name: '', description: '', originalPrice: '', price: '', duration: '' });
-    setIsEditing(false);
-    setShowEditModal(false);
     toast.success("Course updated successfully!");
   };
 
@@ -179,11 +220,12 @@ const AdminDashboard = () => {
       originalPrice: course.originalPrice,
       price: course.price,
       duration: course.duration,
+      razorpayKey: course.razorpayKey || '',
     });
     setIsEditing(true);
     setShowEditModal(true);
   };
-
+  
   const handleDuplicateCourse = (course) => {
     const newId = `course-${Date.now()}`;
     const newCourse = {
@@ -202,9 +244,9 @@ const AdminDashboard = () => {
       prevModules.map(module =>
         module.title === moduleTitle
           ? {
-            ...module,
-            status: module.status === 'Active' ? 'Draft' : 'Active',
-          }
+              ...module,
+              status: module.status === 'Active' ? 'Draft' : 'Active',
+            }
           : module
       )
     );
@@ -214,10 +256,10 @@ const AdminDashboard = () => {
   // View rendering logic
   const renderContent = () => {
     switch (currentView) {
-      case 'dashboard':
-        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
-      case 'course-dashboard':
-        return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
+        case 'dashboard':
+      return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+    case 'course-dashboard':
+      return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
       case 'courses':
         return (
           <CoursesView
@@ -225,10 +267,6 @@ const AdminDashboard = () => {
             courseSearchTerm={courseSearchTerm}
             setCourseSearchTerm={setCourseSearchTerm}
             showAddCourseForm={showAddCourseForm}
-            setShowAddCourseForm={setShowAddCourseForm}
-            courseFormData={courseFormData}
-            handleFormChange={handleFormChange}
-            handleAddCourse={handleAddCourse}
             showEditModal={showEditModal}
             setShowEditModal={setShowEditModal}
             handleUpdateCourse={handleUpdateCourse}
@@ -237,6 +275,8 @@ const AdminDashboard = () => {
             setSelectedCourse={setSelectedCourse}
             setCurrentView={setCurrentView}
             userRole={userRole}
+            courseFormData={courseFormData}
+            setCourseFormData={setCourseFormData}
           />
         );
       case 'days':
@@ -274,13 +314,38 @@ const AdminDashboard = () => {
           <InstructorsPanel
             instructors={instructors}
             handleAddInstructor={handleAddInstructor}
-            handleUpdateInstructor={handleUpdateInstructor}
             handleDeleteInstructor={handleDeleteInstructor}
+            handleUpdateInstructor={handleUpdateInstructor}
             userRole={userRole}
           />
         );
-      case 'avatars':
-        return <Avatars handleLogout={handleLogout} />;
+    case 'students':
+      return (
+        <StudentsPanel
+          students={students}
+          courses={courses}
+          handleAddStudent={handleAddStudent}
+          handleUpdateStudent={handleUpdateStudent}
+          handleDeleteStudent={handleDeleteStudent}
+          userRole={userRole}
+        />
+      );
+    case 'announcements':
+      return (
+        <AnnouncementsView
+          announcements={announcements}
+          handleAddAnnouncement={handleAddAnnouncement}
+          userRole={userRole}
+        />
+      );
+    case 'avatars':
+  return <Avatars handleLogout={handleLogout} />;
+    case 'referrals':
+        return (
+          <ReferralsView 
+            referralData={instructors.filter(i => i.referralCode)} // Pass the instructors with referral data
+          />
+        );
       default:
         return null;
     }
@@ -303,5 +368,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;
