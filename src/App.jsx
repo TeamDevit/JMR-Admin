@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Routes, Route } from "react-router-dom";
 
+
 // Top-level components and layouts
 import LoginPanel from "./components/LoginPanel";
 import MainLayout from "./layouts/MainLayout";
@@ -19,6 +20,7 @@ import AnnouncementsView from "./features/announcements/AnnouncementsView";
 import ReferralsView from "./features/referrals/ReferralsView";
 import ModulesView from "./features/modules/ModulesView";
 import ModuleFormView from "./features/modules/ModuleFormView";
+import CourseForm from "./features/courses/CourseForm";
 
 // Pages
 import Avatars from "./pages/Avatars";
@@ -35,6 +37,7 @@ function App() {
     } else if (email === "instructor@erus.com" && password === "instructor123") {
       setUserRole("instructor");
       toast.success("Signed in as Instructor!");
+      
     } else {
       toast.error("Invalid credentials.");
     }
@@ -63,6 +66,7 @@ function App() {
               <Route path="studentpanel" element={<StudentPanel />} />
               <Route path="avatars" element={<Avatars />} />
               <Route path="courses" element={<CoursesView userRole={userRole} />} />
+              <Route path="courseForm" element={<CourseForm/>} />
               <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
               <Route path="students" element={<StudentsPanel userRole={userRole} />} />
               <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />

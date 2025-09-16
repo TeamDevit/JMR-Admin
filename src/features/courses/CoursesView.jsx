@@ -2,6 +2,7 @@ import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Search, PlusCircle, GraduationCap, Users, Pencil, Copy, ArrowRight } from "lucide-react";
 import CourseForm from "./CourseForm";
+import { useNavigate } from "react-router-dom";
 
 const CoursesView = ({
   courses = [], // ✅ default to empty array
@@ -27,6 +28,7 @@ const CoursesView = ({
       course.name?.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
       course.code?.toLowerCase().includes(courseSearchTerm.toLowerCase())
   );
+    const navigate = useNavigate();
 
   return (
     <div className="flex-1 p-8">
@@ -60,7 +62,7 @@ const CoursesView = ({
           {/* Add Course Button (admin only) */}
           {userRole === "admin" && (
             <button
-              onClick={() => setShowAddCourseForm(true)}
+               onClick={() => navigate("/courseForm")}
               className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
             >
               <PlusCircle size={16} />
