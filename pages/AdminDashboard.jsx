@@ -15,9 +15,13 @@ import Avatars from "./Avatars";
 import MainDashboard from "../src/components/MainDashboard";
 import CourseDashboard from "../src/components/CourseDashboard";
 import ReferralsView from '../src/components/ReferralsView'; // New import for the referrals component
-  
 import StudentsPanel from '../src/components/StudentsPanel';    // New import for student management
 import AnnouncementsView from '../src/components/AnnouncementsView';
+import TransactionsView from '../src/components/TransactionsView';
+import StudentEnrollmentForm from "../src/forms/StudentEnrollmentForm";
+
+
+
 const AdminDashboard = () => {
   // State management for navigation and data
   const [currentView, setCurrentView] = useState('login');
@@ -29,18 +33,18 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
-  // Mock data for courses, instructors, students, and announcements
+  // Mock data for courses, instructors, students, announcements, and transactions
   const [courses, setCourses] = useState([
-    { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45 },
-    { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82 },
-    { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60 },
+    { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45, razorpayKey: 'rzp_test_xyz' },
+    { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82, razorpayKey: 'rzp_test_abc' },
+    { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60, razorpayKey: '' },
   ]);
-  
+
   const [instructors, setInstructors] = useState([
     { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true, role: 'admin', referralCode: 'JANE10', referredStudents: 10, commissionEarned: 5000  },
     { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true, role: 'instructor', referralCode: 'JOHN20', referredStudents: 25, commissionEarned: 12500  },
   ]);
-  
+
   const [students, setStudents] = useState([
     { id: 'student-1', name: 'Alice Johnson', email: 'alice@student.com', courses: ['ELM-101'], progress: 75, grade: 92 },
     { id: 'student-2', name: 'Bob Williams', email: 'bob@student.com', courses: ['CS-201'], progress: 50, grade: 85 },
@@ -50,6 +54,13 @@ const AdminDashboard = () => {
   const [announcements, setAnnouncements] = useState([
     { id: 'ann-1', title: 'Welcome to the new semester!', content: 'We are excited to have you all on board. Let the learning begin!', date: '2023-10-27' },
     { id: 'ann-2', title: 'Maintenance Window', content: 'Our servers will be down for maintenance on 2023-11-05 from 2AM to 4AM.', date: '2023-10-25' },
+  ]);
+
+  // New mock data for transactions
+  const [transactions, setTransactions] = useState([
+    { id: 'txn-1', courseName: 'English Language Mastery', studentName: 'Alice Johnson', amount: 12999, date: '2023-10-26', status: 'Completed', method: 'Razorpay' },
+    { id: 'txn-2', courseName: 'Conversational Spanish', studentName: 'Bob Williams', amount: 9999, date: '2023-10-20', status: 'Completed', method: 'Razorpay' },
+    { id: 'txn-3', courseName: 'Data Science Fundamentals', studentName: 'Charlie Brown', amount: 19999, date: '2023-10-15', status: 'Failed', method: 'Stripe' },
   ]);
 
   // Handlers for instructor management
@@ -72,17 +83,11 @@ const AdminDashboard = () => {
   };
 
   // Handlers for student management
-  const handleAddStudent = (newStudentData) => {
-    const newId = `student-${Date.now()}`;
-    setStudents(prev => [...prev, { id: newId, ...newStudentData }]);
-    toast.success("Student added successfully!");
-  };
-
-  const handleUpdateStudent = (updatedStudentData) => {
-    setStudents(prev => prev.map(student =>
-      student.id === updatedStudentData.id ? { ...student, ...updatedStudentData } : student
-    ));
-    toast.success("Student updated successfully!");
+  const handleBulkEnrollment = (studentsData, courseCode) => {
+    // This is where you would process the uploaded file and enroll students.
+    // For now, we'll just show a success message.
+    console.log(`Enrolling ${studentsData.length} students into course ${courseCode}`);
+    toast.success(`Successfully enrolled ${studentsData.length} students into course ${courseCode}!`);
   };
 
   const handleDeleteStudent = (studentId) => {
@@ -108,7 +113,7 @@ const AdminDashboard = () => {
     duration: '',
     razorpayKey: '', // Added for Razorpay integration
   });
-  
+
   const [courseSearchTerm, setCourseSearchTerm] = useState('');
   const [daySearchTerm, setDaySearchTerm] = useState('');
 
@@ -157,7 +162,7 @@ const AdminDashboard = () => {
     } else if (currentView === 'days') {
       setCurrentView('courses');
       setSelectedCourse(null);
-    } else if (currentView === 'instructors' || currentView === 'avatars' || currentView === 'referrals' || currentView === 'students' || currentView === 'announcements') {
+    } else if (currentView === 'instructors' || currentView === 'avatars' || currentView === 'referrals' || currentView === 'students' || currentView === 'announcements' || currentView === 'transactions' || currentView === 'bulk-enrollment') {
       setCurrentView('courses');
     }
   };
@@ -225,7 +230,7 @@ const AdminDashboard = () => {
     setIsEditing(true);
     setShowEditModal(true);
   };
-  
+
   const handleDuplicateCourse = (course) => {
     const newId = `course-${Date.now()}`;
     const newCourse = {
@@ -253,13 +258,31 @@ const AdminDashboard = () => {
     toast.success("Module status updated!");
   };
 
+  // New transaction export handler
+  const handleExportTransactions = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + [
+      Object.keys(transactions[0]).join(','),
+      ...transactions.map(t => Object.values(t).map(value => `"${value}"`).join(','))
+    ].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transactions_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Transaction report exported successfully!");
+  };
+
+
   // View rendering logic
   const renderContent = () => {
     switch (currentView) {
-        case 'dashboard':
-      return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
-    case 'course-dashboard':
-      return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
+      case 'dashboard':
+        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+      case 'course-dashboard':
+        return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
       case 'courses':
         return (
           <CoursesView
@@ -319,31 +342,43 @@ const AdminDashboard = () => {
             userRole={userRole}
           />
         );
-    case 'students':
-      return (
-        <StudentsPanel
-          students={students}
-          courses={courses}
-          handleAddStudent={handleAddStudent}
-          handleUpdateStudent={handleUpdateStudent}
-          handleDeleteStudent={handleDeleteStudent}
-          userRole={userRole}
-        />
-      );
-    case 'announcements':
-      return (
-        <AnnouncementsView
-          announcements={announcements}
-          handleAddAnnouncement={handleAddAnnouncement}
-          userRole={userRole}
-        />
-      );
-    case 'avatars':
-  return <Avatars handleLogout={handleLogout} />;
-    case 'referrals':
+      case 'students':
         return (
-          <ReferralsView 
+          <StudentsPanel
+            students={students}
+            courses={courses}
+            handleDeleteStudent={handleDeleteStudent}
+            userRole={userRole}
+          />
+        );
+      case 'bulk-enrollment':
+        return (
+          <StudentEnrollmentForm
+            courses={courses}
+            handleBulkEnrollment={handleBulkEnrollment}
+          />
+        );
+      case 'announcements':
+        return (
+          <AnnouncementsView
+            announcements={announcements}
+            handleAddAnnouncement={handleAddAnnouncement}
+            userRole={userRole}
+          />
+        );
+      case 'avatars':
+        return <Avatars handleLogout={handleLogout} />;
+      case 'referrals':
+        return (
+          <ReferralsView
             referralData={instructors.filter(i => i.referralCode)} // Pass the instructors with referral data
+          />
+        );
+      case 'transactions':
+        return (
+          <TransactionsView
+            transactions={transactions}
+            handleExport={handleExportTransactions}
           />
         );
       default:

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X, Gift, Bell, User2 } from "lucide-react";
+import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X, Gift, Bell, User2, DollarSign, Upload } from "lucide-react";
 
 const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,8 +10,10 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
     { name: "Avatars", icon: Bot, view: "avatars", roles: ["admin", "instructor"] },
     { name: "Users", icon: Users, view: "instructors", roles: ["admin"] },
     { name: "Students", icon: User2, view: "students", roles: ["admin", "instructor"] },
+    { name: "Bulk Enrollment", icon: Upload, view: "bulk-enrollment", roles: ["admin"] },
     { name: "Announcements", icon: Bell, view: "announcements", roles: ["admin", "instructor"] },
     { name: "Referrals", icon: Gift, view: "referrals", roles: ["admin"] },
+    { name: "Transactions", icon: DollarSign, view: "transactions", roles: ["admin"] },
   ];
 
   const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));
@@ -30,7 +32,7 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:static top-0 left-0 h-full md:h-auto w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
+        className={`fixed md:static top-0 left-0 h-screen w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div>
@@ -96,5 +98,4 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
     </>
   );
 };
-
 export default Sidebar;

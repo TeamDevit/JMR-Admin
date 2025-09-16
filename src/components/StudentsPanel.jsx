@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import AddEditStudentForm from '../forms/AddEditStudentForm';
+import { Search, PlusCircle, Pencil, Trash2, FileDown } from 'lucide-react';
 
-const StudentsPanel = ({ students, courses, handleAddStudent, handleUpdateStudent, handleDeleteStudent, userRole }) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [studentToEdit, setStudentToEdit] = useState(null);
+const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleEdit = (student) => {
-    setStudentToEdit(student);
-    setIsFormOpen(true);
+  const handleDelete = (studentId) => {
+    handleDeleteStudent(studentId);
   };
 
-  const handleAdd = () => {
-    setStudentToEdit(null);
-    setIsFormOpen(true);
-  };
-
-  const handleSubmit = (formData) => {
-    if (studentToEdit) {
-      handleUpdateStudent(formData);
-    } else {
-      handleAddStudent(formData);
-    }
-    setIsFormOpen(false);
+  const handleExport = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + [
+      "Student Name,Email Address,Enrolled Courses,Progress,Grade",
+      ...students.map(s => 
+        `"${s.name}","${s.email}","${s.courses.join(', ')}",${s.progress},${s.grade}`
+      )
+    ].join('\n');
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "students_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Student report exported successfully!");
   };
 
   const filteredStudents = students.filter(student =>
@@ -50,15 +50,13 @@ const StudentsPanel = ({ students, courses, handleAddStudent, handleUpdateStuden
               className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          {userRole === 'admin' && (
-            <button
-              onClick={handleAdd}
-              className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
-            >
-              <PlusCircle size={16} />
-              <span>Add Student</span>
-            </button>
-          )}
+          <button
+            onClick={handleExport}
+            className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
+          >
+            <FileDown size={16} />
+            <span>Download Report</span>
+          </button>
         </div>
       </div>
       
@@ -114,13 +112,7 @@ const StudentsPanel = ({ students, courses, handleAddStudent, handleUpdateStuden
                       {userRole === 'admin' && (
                         <>
                           <button
-                            onClick={() => handleEdit(student)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteStudent(student.id)}
+                            onClick={() => handleDelete(student.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             <Trash2 size={18} />
@@ -139,15 +131,6 @@ const StudentsPanel = ({ students, courses, handleAddStudent, handleUpdateStuden
           </table>
         </div>
       </div>
-
-      {isFormOpen && (
-        <AddEditStudentForm
-          student={studentToEdit}
-          courses={courses}
-          onSubmit={handleSubmit}
-          onClose={() => setIsFormOpen(false)}
-        />
-      )}
     </div>
   );
 };
