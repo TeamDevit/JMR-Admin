@@ -1,12 +1,12 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
 import { ArrowRight } from 'lucide-react';
-import VocabularyForm from '../forms/vocabulary';
-import PracticeForm from '../forms/Practice';
-import QuizForm from '../forms/Quiz';
-import SentenceForm from '../forms/Sentence';
-import AvatarToStudentForm from '../forms/AvatarToStudent';
-import StudentToAvatarForm from '../forms/StudentToAvatar';
+import VocabularyForm from './vocabulary';
+import PracticeForm from './Practice';
+import QuizForm from './Quiz';
+import SentenceForm from './Sentence';
+import AvatarToStudentForm from './AvatarToStudent';
+import StudentToAvatarForm from './StudentToAvatar';
 
 const ModuleFormView = ({ selectedModule, handleGoBack }) => {
   const FormComponent = (() => {

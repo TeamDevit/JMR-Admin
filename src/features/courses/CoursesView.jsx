@@ -1,8 +1,8 @@
 import React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Search, PlusCircle, GraduationCap, Users, Pencil, Copy, ArrowRight } from 'lucide-react';
-import CourseForm from "../forms/CourseForm";
-import { convertNumberToWords } from '../utils/convertNumberToWords';
+import CourseForm from "./CourseForm";
+import { convertNumberToWords } from '../../utils/convertNumberToWords';
 
 const CoursesView = ({ 
   courses, 

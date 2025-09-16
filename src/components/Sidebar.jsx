@@ -1,52 +1,41 @@
 import React, { useState } from "react";
 import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X, Gift, Bell, User2, DollarSign, Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
+const Sidebar = ({ userRole, handleLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navigation = [
-    { name: "Dashboard", icon: BarChart3, view: "dashboard", roles: ["admin", "instructor"] },
-    { name: "Courses", icon: GraduationCap, view: "courses", roles: ["admin", "instructor"] },
-    { name: "Avatars", icon: Bot, view: "avatars", roles: ["admin", "instructor"] },
-    { name: "Users", icon: Users, view: "instructors", roles: ["admin"] },
-    { name: "Students", icon: User2, view: "students", roles: ["admin", "instructor"] },
-    { name: "Bulk Enrollment", icon: Upload, view: "bulk-enrollment", roles: ["admin"] },
-    { name: "Announcements", icon: Bell, view: "announcements", roles: ["admin", "instructor"] },
-    { name: "Referrals", icon: Gift, view: "referrals", roles: ["admin"] },
-    { name: "Transactions", icon: DollarSign, view: "transactions", roles: ["admin"] },
+    { name: "Dashboard", icon: BarChart3, path: "/", roles: ["admin", "instructor"] },
+    { name: "Courses", icon: GraduationCap, path: "courses", roles: ["admin", "instructor"] },
+    { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
+    { name: "Users", icon: Users, path: "instructors", roles: ["admin"] },
+    { name: "Students", icon: User2, path: "students", roles: ["admin", "instructor"] },
+    { name: "Bulk Enrollment", icon: Upload, path: "bulk-enrollment", roles: ["admin"] },
+    { name: "Announcements", icon: Bell, path: "announcements", roles: ["admin", "instructor"] },
+    { name: "Referrals", icon: Gift, path: "referrals", roles: ["admin"] },
+    { name: "Transactions", icon: DollarSign, path: "transactions", roles: ["admin"] },
   ];
 
   const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));
 
   return (
     <>
-      {/* Floating Toggle Button (mobile only, before sidebar opens) */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-md text-gray-600 hover:text-indigo-600"
-        >
-          <Menu size={24} />
-        </button>
-      )}
-
-      {/* Sidebar */}
       <div
         className={`fixed md:static top-0 left-0 h-screen w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         <div>
-          {/* Top Section: Logo + Close button (mobile) */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <img
                 className="h-10 w-auto rounded-lg shadow-md"
-                src="src/assets/erus.jpg"
+                src="https://placehold.co/100x100/E5E7EB/4B5563?text=Logo"
                 alt="Erus Academy Logo"
               />
               <span className="text-xl font-bold text-gray-900">Erus Academy</span>
             </div>
-            {/* Close button (only mobile) */}
             <button
               onClick={() => setIsOpen(false)}
               className="md:hidden text-gray-600 hover:text-indigo-600"
@@ -54,19 +43,17 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
               <X size={24} />
             </button>
           </div>
-
-          {/* Nav Items */}
           <nav className="space-y-2">
             {allowedNavigation.map((item) => (
               <button
-                key={item.view}
+                key={item.path}
                 onClick={() => {
-                  setCurrentView(item.view);
-                  setIsOpen(false); // auto close on mobile
+                  navigate(item.path);
+                  setIsOpen(false);
                 }}
                 className={`flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200
                 ${
-                  currentView === item.view
+                  window.location.pathname === `/${item.path}`
                     ? "bg-indigo-100 text-indigo-700 font-semibold"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
@@ -77,8 +64,6 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
             ))}
           </nav>
         </div>
-
-        {/* Logout */}
         <button
           onClick={handleLogout}
           className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
@@ -87,11 +72,17 @@ const Sidebar = ({ userRole, currentView, setCurrentView, handleLogout }) => {
           <span>Logout</span>
         </button>
       </div>
-
-      {/* Background overlay for mobile */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-50 md:hidden bg-white p-2 rounded-md shadow-md text-gray-600 hover:text-indigo-600"
+        >
+          <Menu size={24} />
+        </button>
+      )}
       {isOpen && (
         <div
-          className="fixed inset-0 md:hidden"
+          className="fixed inset-0 md:hidden bg-black bg-opacity-50"
           onClick={() => setIsOpen(false)}
         />
       )}

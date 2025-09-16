@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import avatarData from "../data/avatarData";
+import avatarData from "../../data/avatarData";
 import { Search, Copy, Check, LogOut } from 'lucide-react';
 
 const Avatars = ({ handleLogout }) => {

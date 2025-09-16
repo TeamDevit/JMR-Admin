@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import toast, { Toaster } from "react-hot-toast";
 import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import AddEditUserForm from '../forms/AddEditUserForm';
+import AddEditUserForm from './AddEditUserForm';
 
 const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor, userRole, handleUpdateInstructor }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -3,24 +3,26 @@ import toast from "react-hot-toast";
 import {
   ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake
 } from 'lucide-react';
-// Import components
-import LoginPanel from '../src/components/LoginPanel';
-import Sidebar from '../src/components/Sidebar';
-import InstructorsPanel from '../src/components/InstructorsPanel';
-import CoursesView from '../src/components/CoursesView';
-import DaysView from '../src/components/DaysView';
-import ModulesView from '../src/components/ModulesView';
-import ModuleFormView from '../src/components/ModuleFormView';
-import Avatars from "./Avatars";
-import MainDashboard from "../src/components/MainDashboard";
-import CourseDashboard from "../src/components/CourseDashboard";
-import ReferralsView from '../src/components/ReferralsView'; // New import for the referrals component
-import StudentsPanel from '../src/components/StudentsPanel';    // New import for student management
-import AnnouncementsView from '../src/components/AnnouncementsView';
-import TransactionsView from '../src/components/TransactionsView';
-import StudentEnrollmentForm from "../src/forms/StudentEnrollmentForm";
 
+// Import components from their new feature folders
+import LoginPanel from "../components/LoginPanel";
+import Sidebar from "../components/Sidebar";
+import CoursesView from "../features/courses/CoursesView";
+import CourseDashboard from "../features/courses/CourseDashboard";
+import DaysView from "../features/courses/DaysView";
+import InstructorsPanel from "../features/instructors/InstructorsPanel";
+import StudentsPanel from "../features/students/StudentsPanel";
+import StudentEnrollmentForm from "../features/students/StudentEnrollmentForm";
+import MainDashboard from "../features/dashboard/MainDashboard";
+import TransactionsView from "../features/transactions/TransactionsView";
+import AnnouncementsView from "../features/announcements/AnnouncementsView";
+import ReferralsView from "../features/referrals/ReferralsView";
+import ModulesView from "../features/modules/ModulesView";
+import ModuleFormView from "../features/modules/ModuleFormView";
 
+// Pages
+import Avatars from "../pages/Avatars";
+import StudentPanel from "../pages/StudentPanel";
 
 const AdminDashboard = () => {
   // State management for navigation and data

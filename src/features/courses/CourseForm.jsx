@@ -1,6 +1,6 @@
 import React from "react";
 import { XCircle } from "lucide-react";
-import { convertNumberToWords } from "../utils/convertNumberToWords";
+import { convertNumberToWords } from "../../utils/convertNumberToWords";
 
 const CourseForm = ({ setShowAddCourseForm, courseFormData, handleFormChange, handleAddCourse }) => {
   return (
