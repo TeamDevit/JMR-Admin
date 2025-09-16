@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import toast, { Toaster } from "react-hot-toast";
 import { Search, PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import AddEditUserForm from './AddEditUserForm';
 
-const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstructor, userRole, handleUpdateInstructor }) => {
+const InstructorsPanel = ({
+  instructors = [],               // ✅ default empty array
+  handleAddInstructor,
+  handleDeleteInstructor,
+  handleUpdateInstructor,
+  userRole
+}) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -21,15 +28,18 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
   const handleSubmit = (formData) => {
     if (userToEdit) {
       handleUpdateInstructor(formData);
+      toast.success("Instructor updated!");
     } else {
       handleAddInstructor(formData);
+      toast.success("Instructor added!");
     }
-    setIsFormOpen(false); // Close the form after submission
+    setIsFormOpen(false);
   };
 
-  const filteredUsers = instructors.filter(user =>
-    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+  // ✅ Safe filtering
+  const filteredUsers = (instructors || []).filter(user =>
+    user.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
   );
 
   return (
@@ -67,38 +77,22 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email Address
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mobile Number
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Designation
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Login Access
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Courses Created
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email Address</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile Number</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Designation</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Login Access</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courses Created</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user, index) => (
                   <tr key={user.id || index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email || "N/A"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.mobile || 'Not specified'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.designation || 'Not specified'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -153,6 +147,14 @@ const InstructorsPanel = ({ instructors, handleAddInstructor, handleDeleteInstru
       )}
     </div>
   );
+};
+
+InstructorsPanel.propTypes = {
+  instructors: PropTypes.array,
+  handleAddInstructor: PropTypes.func.isRequired,
+  handleDeleteInstructor: PropTypes.func.isRequired,
+  handleUpdateInstructor: PropTypes.func.isRequired,
+  userRole: PropTypes.string.isRequired,
 };
 
 export default InstructorsPanel;

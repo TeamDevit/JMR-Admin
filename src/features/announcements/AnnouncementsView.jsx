@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Send, Bell } from 'lucide-react';
 
-const AnnouncementsView = ({ announcements, handleAddAnnouncement, userRole }) => {
+const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 

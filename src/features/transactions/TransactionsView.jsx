@@ -2,21 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Search, FileDown, DollarSign, BarChart } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 
-const TransactionsView = ({ transactions, handleExport }) => {
+const TransactionsView = ({ transactions = [], handleExport }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [totalRevenue, setTotalRevenue] = useState(0);
 
   useEffect(() => {
-    const revenue = transactions.reduce((acc, curr) => {
-      // Only count completed transactions for revenue
+    const revenue = (transactions || []).reduce((acc, curr) => {
       return curr.status === 'Completed' ? acc + curr.amount : acc;
     }, 0);
     setTotalRevenue(revenue);
   }, [transactions]);
 
-  const filteredTransactions = transactions.filter(t => 
-    t.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTransactions = (transactions || []).filter(t =>
+    (t.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.courseName?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -46,7 +45,7 @@ const TransactionsView = ({ transactions, handleExport }) => {
           </button>
         </div>
       </div>
-      
+
       {/* Dashboard Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 flex items-center space-x-4">
@@ -64,7 +63,7 @@ const TransactionsView = ({ transactions, handleExport }) => {
           </div>
           <div>
             <p className="text-sm text-gray-500">Total Transactions</p>
-            <p className="text-xl font-bold text-gray-900">{transactions.length}</p>
+            <p className="text-xl font-bold text-gray-900">{(transactions || []).length}</p>
           </div>
         </div>
       </div>
@@ -75,27 +74,13 @@ const TransactionsView = ({ transactions, handleExport }) => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Transaction ID
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Course
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Method
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -105,12 +90,10 @@ const TransactionsView = ({ transactions, handleExport }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{t.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.studentName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.courseName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{t.amount.toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{t.amount?.toLocaleString('en-IN')}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.date}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        t.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${t.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {t.status}
                       </span>
                     </td>
@@ -129,4 +112,5 @@ const TransactionsView = ({ transactions, handleExport }) => {
     </div>
   );
 };
+
 export default TransactionsView;

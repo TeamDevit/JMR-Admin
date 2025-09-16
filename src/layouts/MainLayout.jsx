@@ -3,9 +3,9 @@ import Sidebar from "../components/Sidebar";
 
 function MainLayout({ handleLogout, userRole }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <Sidebar handleLogout={handleLogout} userRole={userRole} />
-      <div className="flex-1 overflow-y-auto md:ml-64">
+      <div className="flex-1 ">
         <Outlet />
       </div>
     </div>

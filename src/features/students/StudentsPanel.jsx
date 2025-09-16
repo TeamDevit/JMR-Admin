@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { Search, PlusCircle, Pencil, Trash2, FileDown } from 'lucide-react';
+import { Search, Trash2, FileDown } from 'lucide-react';
 
-const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => {
+const StudentsPanel = ({
+  students = [],        // ✅ default to empty array
+  courses = [],         // ✅ default to empty array
+  handleDeleteStudent = () => {}, 
+  userRole = "viewer",  // ✅ default role
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleDelete = (studentId) => {
@@ -10,13 +15,21 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
   };
 
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8," + [
-      "Student Name,Email Address,Enrolled Courses,Progress,Grade",
-      ...students.map(s => 
-        `"${s.name}","${s.email}","${s.courses.join(', ')}",${s.progress},${s.grade}`
-      )
-    ].join('\n');
-    
+    if (!students.length) {
+      toast.error("No student data to export!");
+      return;
+    }
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        "Student Name,Email Address,Enrolled Courses,Progress,Grade",
+        ...students.map(
+          (s) =>
+            `"${s.name}","${s.email}","${s.courses?.join(", ") || ""}",${s.progress || 0},${s.grade || ""}`
+        ),
+      ].join("\n");
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -27,9 +40,10 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
     toast.success("Student report exported successfully!");
   };
 
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -59,28 +73,28 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
           </button>
         </div>
       </div>
-      
+
       <div className="w-full max-w-7xl">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Student Name
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email Address
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Courses
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Progress
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Grade
                 </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -89,13 +103,20 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student, index) => (
                   <tr key={student.id || index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {student.name || "N/A"}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.courses.map(courseCode => {
-                        const course = courses.find(c => c.code === courseCode);
+                      {student.email || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.courses?.map((courseCode) => {
+                        const course = courses.find((c) => c.code === courseCode);
                         return course ? (
-                          <span key={courseCode} className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 mr-2">
+                          <span
+                            key={courseCode}
+                            className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 mr-2"
+                          >
                             {course.name}
                           </span>
                         ) : null;
@@ -103,28 +124,38 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${student.progress}%` }}></div>
+                        <div
+                          className="bg-indigo-600 h-2 rounded-full"
+                          style={{ width: `${student.progress || 0}%` }}
+                        ></div>
                       </div>
-                      <span className="text-xs text-gray-500 mt-1">{student.progress}%</span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {student.progress || 0}%
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.grade}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.grade || "N/A"}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      {userRole === 'admin' && (
-                        <>
-                          <button
-                            onClick={() => handleDelete(student.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </>
+                      {userRole === "admin" && (
+                        <button
+                          onClick={() => handleDelete(student.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">No students found.</td>
+                  <td
+                    colSpan="6"
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
+                    No students found.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -134,4 +165,5 @@ const StudentsPanel = ({ students, courses, handleDeleteStudent, userRole }) => 
     </div>
   );
 };
+
 export default StudentsPanel;

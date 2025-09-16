@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
-const ReferralsView = ({ referralData }) => {
+const ReferralsView = ({ referralData = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredReferrals = referralData.filter(user =>

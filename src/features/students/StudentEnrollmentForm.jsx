@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
 import { Download, Upload, FileCheck2 } from 'lucide-react';
+import toast, { Toaster } from "react-hot-toast";
 
-const StudentEnrollmentForm = ({ courses, handleBulkEnrollment }) => {
+const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
   const [file, setFile] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState('');
 
@@ -15,20 +15,19 @@ const StudentEnrollmentForm = ({ courses, handleBulkEnrollment }) => {
       toast.error("Please select a file and a course.");
       return;
     }
-    // This is where you would process the file,
-    // parse the data, and call the bulk enrollment handler.
-    // For this mock implementation, we just show a success toast.
+    // Mock processing
     const mockStudentsData = [{ name: 'Test Student 1' }, { name: 'Test Student 2' }];
     handleBulkEnrollment(mockStudentsData, selectedCourse);
     setFile(null);
     setSelectedCourse('');
+    toast.success("Student data uploaded successfully!");
   };
   
   const handleDownloadTemplate = () => {
     const templateContent = `"Student Name","Email Address","Progress","Grade"
 "John Doe","john@example.com",0,0
 "Jane Smith","jane@example.com",0,0`;
-    
+
     const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     if (link.download !== undefined) {
@@ -49,6 +48,7 @@ const StudentEnrollmentForm = ({ courses, handleBulkEnrollment }) => {
       <div className="w-full max-w-7xl">
         <h2 className="text-2xl font-semibold text-gray-700 mb-6">Bulk Student Enrollment</h2>
         
+        {/* Download + Course Selection */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-xl font-semibold mb-4">Enroll Multiple Students</h3>
           <p className="text-gray-600 mb-4">
@@ -71,13 +71,16 @@ const StudentEnrollmentForm = ({ courses, handleBulkEnrollment }) => {
               >
                 <option value="">Select a Course</option>
                 {courses.map(course => (
-                  <option key={course.id} value={course.code}>{course.name} ({course.code})</option>
+                  <option key={course.id} value={course.code}>
+                    {course.name} ({course.code})
+                  </option>
                 ))}
               </select>
             </div>
           </div>
         </div>
 
+        {/* File Upload */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-xl font-semibold mb-4">Upload Completed Student List</h3>
           <div className="flex items-center space-x-4">
@@ -104,4 +107,5 @@ const StudentEnrollmentForm = ({ courses, handleBulkEnrollment }) => {
     </div>
   );
 };
+
 export default StudentEnrollmentForm;

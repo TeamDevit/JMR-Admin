@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import toast, { Toaster } from 'react-hot-toast';
-import { Routes, Route } from "react-router-dom"; // 🚨 removed BrowserRouter here
+import toast, { Toaster } from "react-hot-toast";
+import { Routes, Route } from "react-router-dom";
 
 // Top-level components and layouts
 import LoginPanel from "./components/LoginPanel";
@@ -30,10 +30,10 @@ function App() {
 
   const handleLogin = (email, password) => {
     if (email === "admin@erus.com" && password === "admin123") {
-      setUserRole('admin');
-      toast.success("Signed in as Admin!");
+      setUserRole("admin");
+  
     } else if (email === "instructor@erus.com" && password === "instructor123") {
-      setUserRole('instructor');
+      setUserRole("instructor");
       toast.success("Signed in as Instructor!");
     } else {
       toast.error("Invalid credentials.");
@@ -47,27 +47,35 @@ function App() {
 
   return (
     <>
+      {/* Only one Toaster at the top level */}
       <Toaster position="top-right" reverseOrder={false} />
+
       {userRole ? (
-        <Routes>
-          <Route path="/" element={<MainLayout handleLogout={handleLogout} userRole={userRole} />}>
-            <Route index element={<MainDashboard />} />
-            <Route path="adminpanel" element={<AdminDashboard userRole={userRole} />} />
-            <Route path="studentpanel" element={<StudentPanel />} />
-            <Route path="avatars" element={<Avatars />} />
-            <Route path="courses" element={<CoursesView userRole={userRole} />} />
-            <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
-            <Route path="students" element={<StudentsPanel userRole={userRole} />} />
-            <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />
-            <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
-            <Route path="transactions" element={<TransactionsView />} />
-            <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
-            <Route path="course-dashboard" element={<CourseDashboard />} />
-            <Route path="days" element={<DaysView />} />
-            <Route path="modules" element={<ModulesView />} />
-            <Route path="module-form" element={<ModuleFormView />} />
-          </Route>
-        </Routes>
+        // Wrap all pages to leave space for fixed sidebar
+        <div className="md:pl-64 min-h-screen bg-gray-50">
+          <Routes>
+            <Route
+              path="/"
+              element={<MainLayout handleLogout={handleLogout} userRole={userRole} />}
+            >
+              <Route index element={<MainDashboard />} />
+              <Route path="adminpanel" element={<AdminDashboard userRole={userRole} />} />
+              <Route path="studentpanel" element={<StudentPanel />} />
+              <Route path="avatars" element={<Avatars />} />
+              <Route path="courses" element={<CoursesView userRole={userRole} />} />
+              <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
+              <Route path="students" element={<StudentsPanel userRole={userRole} />} />
+              <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />
+              <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
+              <Route path="transactions" element={<TransactionsView />} />
+              <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
+              <Route path="course-dashboard" element={<CourseDashboard />} />
+              <Route path="days" element={<DaysView />} />
+              <Route path="modules" element={<ModulesView />} />
+              <Route path="module-form" element={<ModuleFormView />} />
+            </Route>
+          </Routes>
+        </div>
       ) : (
         <LoginPanel handleLogin={handleLogin} />
       )}

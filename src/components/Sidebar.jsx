@@ -1,5 +1,18 @@
 import React, { useState } from "react";
-import { GraduationCap, Bot, Users, LogOut, BarChart3, Menu, X, Gift, Bell, User2, DollarSign, Upload } from "lucide-react";
+import {
+  GraduationCap,
+  Bot,
+  Users,
+  LogOut,
+  BarChart3,
+  Menu,
+  X,
+  Gift,
+  Bell,
+  User2,
+  DollarSign,
+  Upload,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ userRole, handleLogout }) => {
@@ -22,10 +35,12 @@ const Sidebar = ({ userRole, handleLogout }) => {
 
   return (
     <>
+      {/* Sidebar */}
       <div
-        className={`fixed md:static top-0 left-0 h-screen w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
+        className={`fixed top-0 left-0 h-screen w-64 bg-white shadow-lg p-6 flex flex-col justify-between transform transition-transform duration-300 z-50
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
+        {/* Logo & Close Button */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
@@ -43,6 +58,8 @@ const Sidebar = ({ userRole, handleLogout }) => {
               <X size={24} />
             </button>
           </div>
+
+          {/* Navigation */}
           <nav className="space-y-2">
             {allowedNavigation.map((item) => (
               <button
@@ -64,6 +81,8 @@ const Sidebar = ({ userRole, handleLogout }) => {
             ))}
           </nav>
         </div>
+
+        {/* Logout */}
         <button
           onClick={handleLogout}
           className="flex items-center space-x-3 px-4 py-2 rounded-md w-full text-left transition-colors duration-200 text-gray-600 hover:bg-gray-100"
@@ -72,6 +91,8 @@ const Sidebar = ({ userRole, handleLogout }) => {
           <span>Logout</span>
         </button>
       </div>
+
+      {/* Hamburger button for mobile */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -80,13 +101,16 @@ const Sidebar = ({ userRole, handleLogout }) => {
           <Menu size={24} />
         </button>
       )}
+
+      {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 md:hidden bg-black bg-opacity-50"
+          className="fixed inset-0 md:hidden bg-black bg-opacity-30 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
     </>
   );
 };
+
 export default Sidebar;
