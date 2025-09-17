@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Search, PlusCircle, GraduationCap, Users, Pencil, Copy, ArrowRight } from "lucide-react";
 import CourseForm from "./CourseForm";
 import { useNavigate } from "react-router-dom";
+import { convertNumberToWords } from "../../utils/convertNumberToWords";
 
 const CoursesView = ({
   courses = [], // ✅ default to empty array
@@ -22,13 +23,27 @@ const CoursesView = ({
   setCurrentView,
   userRole,
 }) => {
-  // ✅ Safe filter (no error if courses is undefined)
+  const navigate = useNavigate();
+
   const filteredCourses = (courses || []).filter(
     (course) =>
       course.name?.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
       course.code?.toLowerCase().includes(courseSearchTerm.toLowerCase())
   );
-    const navigate = useNavigate();
+  
+  const handleOpenAddForm = () => {
+    setShowAddCourseForm(true);
+    handleEditCourse({}); // Reset form for new course
+  };
+
+  const handleOpenEditForm = (course) => {
+    setShowAddCourseForm(true);
+    handleEditCourse(course);
+  };
+  
+  const handleCancel = () => {
+    setShowAddCourseForm(false);
+  };
 
   return (
     <div className="flex-1 p-8">
@@ -62,7 +77,7 @@ const CoursesView = ({
           {/* Add Course Button (admin only) */}
           {userRole === "admin" && (
             <button
-               onClick={() => navigate("/courseForm")}
+              onClick={handleOpenAddForm}
               className="flex items-center space-x-2 px-4 py-2 text-sm text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50 transition-colors duration-200"
             >
               <PlusCircle size={16} />
@@ -75,10 +90,10 @@ const CoursesView = ({
       {/* Show CourseForm when add course is clicked */}
       {showAddCourseForm && (
         <CourseForm
-          setShowAddCourseForm={setShowAddCourseForm}
-          courseFormData={courseFormData}
-          handleFormChange={handleFormChange}
-          handleAddCourse={handleAddCourse}
+          courseData={courseFormData}
+          onClose={handleCloseForm}
+          onSave={courseFormData.id ? handleUpdateCourse : handleAddCourse}
+          isEditing={!!courseFormData.id}
         />
       )}
 
@@ -114,10 +129,7 @@ const CoursesView = ({
                     >
                       {/* Edit */}
                       <button
-                        onClick={() => {
-                          setShowAddCourseForm(true);
-                          handleEditCourse(course);
-                        }}
+                        onClick={() => handleOpenEditForm(course)}
                         className="p-2 text-gray-500 hover:text-indigo-600 rounded-full transition-colors"
                       >
                         <Pencil size={18} />
@@ -188,8 +200,16 @@ const CoursesView = ({
           )}
         </div>
       </div>
+
+      {showEditModal && (
+        <CourseForm
+          courseData={courseFormData}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleUpdateCourse}
+          isEditing={true}
+        />
+      )}
     </div>
   );
 };
-
 export default CoursesView;

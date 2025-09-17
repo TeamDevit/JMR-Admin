@@ -75,7 +75,9 @@ const TransactionsView = ({ transactions = [], handleExport }) => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STUDENT ID</th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -88,6 +90,8 @@ const TransactionsView = ({ transactions = [], handleExport }) => {
                 filteredTransactions.map((t, index) => (
                   <tr key={t.id || index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{t.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.studentID}</td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.studentName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{t.courseName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹{t.amount?.toLocaleString('en-IN')}</td>

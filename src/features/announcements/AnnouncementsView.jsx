@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { Send, Bell } from 'lucide-react';
+import { Send } from 'lucide-react';
 
-const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole }) => {
+const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole, courses = [] }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('all');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,10 +13,24 @@ const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole
       toast.error('Title and content are required.');
       return;
     }
-    handleAddAnnouncement({ title, content });
+    handleAddAnnouncement({ title, content, courseCode: selectedCourse });
     setTitle('');
     setContent('');
+    setSelectedCourse('all');
   };
+
+  const getCourseName = (courseCode) => {
+    if (courseCode === 'all') {
+      return 'All Courses';
+    }
+    const course = courses.find(c => c.code === courseCode);
+    return course ? course.name : 'Unknown Course';
+  };
+
+  const filteredAnnouncements = announcements.filter(announcement => {
+    if (selectedCourse === 'all') return true;
+    return announcement.courseCode === selectedCourse;
+  });
 
   return (
     <div className="flex-1 p-8">
@@ -51,6 +66,20 @@ const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole
                   required
                 ></textarea>
               </div>
+              <div>
+                <label htmlFor="course-select" className="block text-sm font-medium text-gray-700">Send to Course</label>
+                <select
+                  id="course-select"
+                  value={selectedCourse}
+                  onChange={(e) => setSelectedCourse(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+                >
+                  <option value="all">All Courses</option>
+                  {courses.map(course => (
+                    <option key={course.id} value={course.code}>{course.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-end">
                 <button
                   type="submit"
@@ -65,12 +94,18 @@ const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole
         )}
 
         <div className="space-y-6">
-          {announcements.length > 0 ? (
-            announcements.map(announcement => (
+          <h3 className="text-xl font-semibold mb-4">All Announcements</h3>
+          {filteredAnnouncements.length > 0 ? (
+            filteredAnnouncements.map(announcement => (
               <div key={announcement.id} className="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-lg font-semibold text-gray-900">{announcement.title}</h4>
-                  <span className="text-sm text-gray-500">{announcement.date}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">{announcement.date}</span>
+                    <span className="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                      {getCourseName(announcement.courseCode)}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-gray-600">{announcement.content}</p>
               </div>
@@ -85,4 +120,5 @@ const AnnouncementsView = ({ announcements = [], handleAddAnnouncement, userRole
     </div>
   );
 };
+
 export default AnnouncementsView;

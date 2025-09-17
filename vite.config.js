@@ -3,10 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),react()
-  ],
-    base: "/https://github.com/TeamDevit/JMR-Admin/"
-
+  plugins: [tailwindcss(), react()],
+  base: "./",  // ✅ must match repo name exactly
 })
-
