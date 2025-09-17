@@ -204,7 +204,16 @@ const [avatarId, setAvatarId] = useState("");
         {/* Navigation Header */}
         <div className="flex items-center justify-between mb-8">
        
-
+  <button
+    onClick={handleBack}
+    className="group flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-sm 
+              border border-gray-200 rounded-xl shadow hover:shadow-md 
+              text-gray-700 hover:text-gray-900 hover:bg-gray-100 
+              transition-all duration-300"
+  >
+    <ArrowLeftIcon className="w-5 h-5" />
+    <span className="font-medium">Back</span>
+  </button>
           <button
             onClick={handleDownloadTemplate}
             className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-700 to-sky-900

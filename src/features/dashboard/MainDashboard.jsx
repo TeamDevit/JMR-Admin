@@ -16,90 +16,110 @@ import {
   Activity
 } from 'lucide-react';
 
-const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole }) => {
-  // Mock data - replace with real data
-  const totalRevenue = 2847650;
-  const totalStudents = 1243;
-  const activeCourses = courses?.length || 0;
+const MainDashboard = ({ setSelectedCourse, setCurrentView, userRole }) => {
+  // ✅ Mock courses (from CoursesView)
+  const courses = [
+    {
+      id: 1,
+      name: "React Basics",
+      code: "REACT101",
+      description: "Learn the fundamentals of React.js.",
+      price: 15000,
+      discount: 12999,
+      durationDays: 90,
+      studentsEnrolled: 200,
+    },
+    {
+      id: 2,
+      name: "JavaScript Advanced",
+      code: "JS201",
+      description: "Deep dive into advanced JavaScript concepts.",
+      price: 20000,
+      discount: 17500,
+      durationDays: 120,
+      studentsEnrolled: 150,
+    },
+    {
+      id: 3,
+      name: "Python for Data Science",
+      code: "PY301",
+      description: "Master Python for data analysis and machine learning.",
+      price: 25000,
+      discount: null,
+      durationDays: 60,
+      studentsEnrolled: 300,
+    }
+  ];
+// Quick access sections
+const quickAccessSections = [
+  {
+    title: "Course Management",
+    count: 5,
+    items: [
+      { name: "Manage Courses", icon: GraduationCap },
+      { name: "Course Analytics", icon: BarChart3 },
+      { name: "Student Progress", icon: TrendingUp },
+      { name: "Course Reviews", icon: Star },
+      { name: "Course Materials", icon: FileText }
+    ]
+  },
+  {
+    title: "Student Management",
+    count: 4,
+    items: [
+      { name: "All Students", icon: Users },
+      { name: "Enrollments", icon: BookOpen },
+      { name: "Student Performance", icon: Target },
+      { name: "Certificates", icon: Star }
+    ]
+  },
+  {
+    title: "Financial Management",
+    count: 3,
+    items: [
+      { name: "Revenue Analytics", icon: DollarSign },
+      { name: "Payment Tracking", icon: Activity },
+      { name: "Financial Reports", icon: PieChart }
+    ]
+  },
+  {
+    title: "System & Settings",
+    count: 4,
+    items: [
+      { name: "User Management", icon: Users },
+      { name: "System Settings", icon: Settings },
+      { name: "Reports", icon: FileText },
+      { name: "Analytics Dashboard", icon: BarChart3 }
+    ]
+  }
+];
+
+  // Key metrics
+  const totalRevenue = courses.reduce((sum, course) => sum + (course.studentsEnrolled * (course.discount || course.price)), 0);
+  const totalStudents = courses.reduce((sum, course) => sum + course.studentsEnrolled, 0);
+  const activeCourses = courses.length;
   const completionRate = 78.5;
 
   const getCurrentDate = () => {
-    return new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0
-    }).format(amount);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
   };
 
   const calculateCourseStats = (course) => {
-    // Mock calculations - replace with real data
     const enrolled = course.studentsEnrolled || 0;
     const capacity = Math.max(enrolled * 1.5, 100);
     const completionPercentage = ((enrolled / capacity) * 100).toFixed(2);
-    const revenue = enrolled * course.price;
-    
-    return {
-      enrolled,
-      capacity,
-      completionPercentage: parseFloat(completionPercentage),
-      revenue
-    };
+    const revenue = enrolled * (course.discount || course.price);
+
+    return { enrolled, capacity, completionPercentage: parseFloat(completionPercentage), revenue };
   };
 
-  const quickAccessSections = [
-    {
-      title: "Course Management",
-      count: 5,
-      items: [
-        { name: "Manage Courses", icon: GraduationCap },
-        { name: "Course Analytics", icon: BarChart3 },
-        { name: "Student Progress", icon: TrendingUp },
-        { name: "Course Reviews", icon: Star },
-        { name: "Course Materials", icon: FileText }
-      ]
-    },
-    {
-      title: "Student Management",
-      count: 4,
-      items: [
-        { name: "All Students", icon: Users },
-        { name: "Enrollments", icon: BookOpen },
-        { name: "Student Performance", icon: Target },
-        { name: "Certificates", icon: Star }
-      ]
-    },
-    {
-      title: "Financial Management",
-      count: 3,
-      items: [
-        { name: "Revenue Analytics", icon: DollarSign },
-        { name: "Payment Tracking", icon: Activity },
-        { name: "Financial Reports", icon: PieChart }
-      ]
-    },
-    {
-      title: "System & Settings",
-      count: 4,
-      items: [
-        { name: "User Management", icon: Users },
-        { name: "System Settings", icon: Settings },
-        { name: "Reports", icon: FileText },
-        { name: "Analytics Dashboard", icon: BarChart3 }
-      ]
-    }
-  ];
-
   const handleCourseClick = (course) => {
-    setSelectedCourse(course);
-    setCurrentView('course-dashboard');
+    if (setSelectedCourse) setSelectedCourse(course);
+    if (setCurrentView) setCurrentView('course-dashboard');
   };
 
   return (
@@ -132,7 +152,6 @@ const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole })
             <DollarSign className="h-8 w-8 text-green-500" />
           </div>
         </div>
-        
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -142,7 +161,6 @@ const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole })
             <Users className="h-8 w-8 text-blue-500" />
           </div>
         </div>
-        
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -152,7 +170,6 @@ const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole })
             <GraduationCap className="h-8 w-8 text-indigo-500" />
           </div>
         </div>
-        
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
@@ -164,60 +181,43 @@ const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole })
         </div>
       </div>
 
-      {/* Course Statistics */}
+      {/* Course Enrollment Overview */}
       <div className="mb-8">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Enrollment Overview</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses && courses.length > 0 ? (
-            courses.map((course) => {
-              const stats = calculateCourseStats(course);
-              return (
-                <div 
-                  key={course.id}
-                  onClick={() => handleCourseClick(course)}
-                  className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">{course.name}</h4>
-                      <p className="text-xs text-gray-500">Code: {course.code}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-indigo-600">{stats.enrolled}</p>
-                      <p className="text-xs text-gray-500">Enrolled</p>
-                    </div>
+          {courses.map(course => {
+            const stats = calculateCourseStats(course);
+            return (
+              <div key={course.id} onClick={() => handleCourseClick(course)} className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1">{course.name}</h4>
+                    <p className="text-xs text-gray-500">Code: {course.code}</p>
                   </div>
-                  
-                  <div className="mb-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Enrolled / Capacity</span>
-                      <span className="font-semibold">{stats.completionPercentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.min(stats.completionPercentage, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs text-gray-600">
-                    <span>Revenue: {formatCurrency(stats.revenue)}</span>
-                    <span>{stats.enrolled}/{stats.capacity}</span>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-indigo-600">{stats.enrolled}</p>
+                    <p className="text-xs text-gray-500">Enrolled</p>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              <GraduationCap className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p>No courses available. Create your first course to get started!</p>
-            </div>
-          )}
+                <div className="mb-3">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Enrolled / Capacity</span>
+                    <span className="font-semibold">{stats.completionPercentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${Math.min(stats.completionPercentage, 100)}%` }}></div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-600">
+                  <span>Revenue: {formatCurrency(stats.revenue)}</span>
+                  <span>{stats.enrolled}/{stats.capacity}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* Quick Access */}
+         {/* Quick Access */}
       <div>
         <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Access</h3>
         <p className="text-gray-600 mb-6">Navigate to your most used features</p>
@@ -254,7 +254,6 @@ const MainDashboard = ({ courses, setSelectedCourse, setCurrentView, userRole })
           ))}
         </div>
       </div>
-
       {/* Footer */}
       <div className="mt-12 pt-8 border-t border-gray-200 text-center">
         <p className="text-sm text-gray-500">Erus Course Management</p>
