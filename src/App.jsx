@@ -21,6 +21,7 @@ import ReferralsView from "./features/referrals/ReferralsView";
 import ModulesView from "./features/modules/ModulesView";
 import ModuleFormView from "./features/modules/ModuleFormView";
 import CourseForm from "./features/courses/CourseForm";
+import AccountPage from "./features/account/AccountPage";
 
 // Pages
 import Avatars from "./pages/Avatars";
@@ -77,6 +78,9 @@ function App() {
               <Route path="days" element={<DaysView />} />
               <Route path="modules" element={<ModulesView />} />
               <Route path="module-form" element={<ModuleFormView />} />
+              <Route path="*" element={<div className="p-8">Page not found</div>} />
+<Route path="account" element={<AccountPage  />} />
+
             </Route>
           </Routes>
         </div>

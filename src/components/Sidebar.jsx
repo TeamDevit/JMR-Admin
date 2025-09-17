@@ -12,6 +12,7 @@ import {
   User2,
   DollarSign,
   Upload,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,8 +29,8 @@ const Sidebar = ({ userRole, handleLogout }) => {
     { name: "Announcements", icon: Bell, path: "announcements", roles: ["admin", "instructor"] },
     { name: "Referrals", icon: Gift, path: "referrals", roles: ["admin"] },
     { name: "Transactions", icon: DollarSign, path: "transactions", roles: ["admin"] },
-        { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
-
+    { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
+    { name: "Account", icon: Settings, path: "account", roles: ["admin", "instructor"] }, // 👈 New
   ];
 
   const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));
@@ -47,7 +48,7 @@ const Sidebar = ({ userRole, handleLogout }) => {
             <div className="flex items-center space-x-2">
               <img
                 className="h-10 w-auto rounded-lg shadow-md"
-                src="src\assets\erus.jpg"
+                src="src/assets/erus.jpg"
                 alt="Erus Academy Logo"
               />
               <span className="text-xl font-bold text-gray-900">Erus Academy</span>
