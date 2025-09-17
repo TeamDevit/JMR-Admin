@@ -2,42 +2,86 @@ import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Search, Trash2, FileDown } from 'lucide-react';
 
+// Mock data to pre-populate the component
+const MOCK_COURSES = [
+  { code: 'CS101', name: 'Intro to Programming' },
+  { code: 'MATH201', name: 'Calculus I' },
+  { code: 'PHYS305', name: 'Quantum Mechanics' },
+  { code: 'HIST110', name: 'World History' },
+];
+
+const MOCK_STUDENTS = [
+  {
+    id: 's1',
+    name: 'Alice Johnson',
+    email: 'alice.j@example.com',
+    courses: ['CS101', 'MATH201'],
+    progress: 75,
+    grade: 'A-',
+  },
+  {
+    id: 's2',
+    name: 'Bob Smith',
+    email: 'bob.s@example.com',
+    courses: ['PHYS305'],
+    progress: 40,
+    grade: 'C+',
+  },
+  {
+    id: 's3',
+    name: 'Charlie Brown',
+    email: 'charlie.b@example.com',
+    courses: ['HIST110', 'CS101'],
+    progress: 92,
+    grade: 'A',
+  },
+  {
+    id: 's4',
+    name: 'Diana Prince',
+    email: 'diana.p@example.com',
+    courses: [], // No courses for this student
+    progress: 0,
+    grade: 'N/A',
+  },
+];
+
 const StudentsPanel = ({
-  students = [],        // ✅ default to empty array
-  courses = [],         // ✅ default to empty array
-  handleDeleteStudent = () => {}, 
-  userRole = "viewer",  // ✅ default role
+  userRole = 'admin', // Changed default role for demo purposes
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [students, setStudents] = useState(MOCK_STUDENTS);
 
-  const handleDelete = (studentId) => {
-    handleDeleteStudent(studentId);
+  const handleDeleteStudent = (studentId) => {
+    setStudents(students.filter((s) => s.id !== studentId));
+    toast.success('Student deleted successfully!');
   };
 
   const handleExport = () => {
     if (!students.length) {
-      toast.error("No student data to export!");
+      toast.error('No student data to export!');
       return;
     }
 
     const csvContent =
-      "data:text/csv;charset=utf-8," +
+      'data:text/csv;charset=utf-8,' +
       [
-        "Student Name,Email Address,Enrolled Courses,Progress,Grade",
+        'Student Name,Email Address,Enrolled Courses,Progress,Grade',
         ...students.map(
           (s) =>
-            `"${s.name}","${s.email}","${s.courses?.join(", ") || ""}",${s.progress || 0},${s.grade || ""}`
+            `"${s.name}","${s.email}","${s.courses?.join(', ') || ''}",${
+              s.progress || 0
+            },"${s.grade || ''}"`
         ),
-      ].join("\n");
+      ].join('\n');
 
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "students_report.csv");
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'students_report.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Student report exported successfully!");
+    toast.success('Student report exported successfully!');
   };
 
   const filteredStudents = students.filter(
@@ -50,7 +94,9 @@ const StudentsPanel = ({
     <div className="flex-1 p-8">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="w-full max-w-7xl flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-700">Student Management</h2>
+        <h2 className="text-2xl font-semibold text-gray-700">
+          Student Management
+        </h2>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -104,14 +150,16 @@ const StudentsPanel = ({
                 filteredStudents.map((student, index) => (
                   <tr key={student.id || index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {student.name || "N/A"}
+                      {student.name || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.email || "N/A"}
+                      {student.email || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {student.courses?.map((courseCode) => {
-                        const course = courses.find((c) => c.code === courseCode);
+                        const course = MOCK_COURSES.find(
+                          (c) => c.code === courseCode
+                        );
                         return course ? (
                           <span
                             key={courseCode}
@@ -134,12 +182,12 @@ const StudentsPanel = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.grade || "N/A"}
+                      {student.grade || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      {userRole === "admin" && (
+                      {userRole === 'admin' && (
                         <button
-                          onClick={() => handleDelete(student.id)}
+                          onClick={() => handleDeleteStudent(student.id)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <Trash2 size={18} />

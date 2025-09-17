@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { XCircle, Upload, GraduationCap, Users, PlusCircle, Play, Calendar, Share, Bookmark } from 'lucide-react';
+import { XCircle, PlusCircle, Play, Calendar, Share, Bookmark } from 'lucide-react';
 import { convertNumberToWords } from '../../utils/convertNumberToWords';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -26,14 +26,14 @@ const CourseForm = ({
   const [imagePreview, setImagePreview] = useState(courseData.image);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setFormData(courseData);
-    if (courseData.image) {
-      setImagePreview(courseData.image);
-    } else {
-      setImagePreview(null);
-    }
-  }, [courseData]);
+  // ✅ Fix: Merge courseData instead of replacing
+useEffect(() => {
+  if (courseData && Object.keys(courseData).length > 0) {
+    setFormData(prev => ({ ...prev, ...courseData }));
+    setImagePreview(courseData.image || null);
+  }
+}, [courseData]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,8 +58,10 @@ const CourseForm = ({
     }
   };
 
+  // ✅ Fix: Close button should navigate
   const handleCancel = () => {
-    onClose();
+    navigate(-1);
+    
   };
 
   const handleSubmit = (e) => {
@@ -69,7 +71,7 @@ const CourseForm = ({
       return;
     }
     onSave({ ...formData, image: imagePreview });
-    onClose();
+    navigate('/courses');
   };
 
   const renderPrice = () => {
@@ -85,40 +87,6 @@ const CourseForm = ({
       );
     }
     return <span className="text-2xl font-bold text-gray-900">₹{price.toLocaleString('en-IN')}</span>;
-  };
-
-  const renderLearningObjectives = () => {
-    return (
-      <ul className="list-disc list-inside text-gray-700 space-y-1">
-        <li>Master fundamental concepts and techniques</li>
-        <li>Build real-world projects for your portfolio</li>
-        <li>Prepare for industry certifications</li>
-        <li>Join a community of learners and experts</li>
-      </ul>
-    );
-  };
-  
-  const renderCourseIncludes = () => {
-    return (
-      <ul className="text-gray-700 space-y-2">
-        <li className="flex items-center">
-          <Play className="h-4 w-4 text-blue-600 mr-2" />
-          <span>{formData.modules || 0} hours on-demand video</span>
-        </li>
-        <li className="flex items-center">
-          <Calendar className="h-4 w-4 text-blue-600 mr-2" />
-          <span>Full lifetime access</span>
-        </li>
-        <li className="flex items-center">
-          <Share className="h-4 w-4 text-blue-600 mr-2" />
-          <span>Access on mobile and TV</span>
-        </li>
-        <li className="flex items-center">
-          <Bookmark className="h-4 w-4 text-blue-600 mr-2" />
-          <span>Certificate of completion</span>
-        </li>
-      </ul>
-    );
   };
 
   return (
