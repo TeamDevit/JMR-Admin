@@ -9,9 +9,7 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
     email: '',
     mobile: '',
     designation: '',
-    loginEnabled: true,
     role: 'instructor',
-    password: ''
   });
 
   useEffect(() => {
@@ -22,18 +20,16 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
         email: user.email || '',
         mobile: user.mobile || '',
         designation: user.designation || '',
-        loginEnabled: user.loginEnabled || true,
         role: user.role || 'instructor',
-        password: '' // Don't pre-fill password for security
       });
     }
   }, [user]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -122,31 +118,6 @@ const AddEditUserForm = ({ user, onSubmit, onClose }) => {
               <option value="admin">Admin</option>
             </select>
           </div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="loginEnabled"
-              name="loginEnabled"
-              checked={formData.loginEnabled}
-              onChange={handleChange}
-              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-            />
-            <label htmlFor="loginEnabled" className="text-sm font-medium text-gray-700">Login Access</label>
-          </div>
-          {!user && (
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
-                required={!user}
-              />
-            </div>
-          )}
           <div className="flex justify-end space-x-3 mt-6">
             <button
               type="button"

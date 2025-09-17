@@ -22,13 +22,14 @@ const Sidebar = ({ userRole, handleLogout }) => {
   const navigation = [
     { name: "Dashboard", icon: BarChart3, path: "/", roles: ["admin", "instructor"] },
     { name: "Courses", icon: GraduationCap, path: "courses", roles: ["admin", "instructor"] },
-    { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
     { name: "Users", icon: Users, path: "instructors", roles: ["admin"] },
     { name: "Students", icon: User2, path: "students", roles: ["admin", "instructor"] },
     { name: "Bulk Enrollment", icon: Upload, path: "bulk-enrollment", roles: ["admin"] },
     { name: "Announcements", icon: Bell, path: "announcements", roles: ["admin", "instructor"] },
     { name: "Referrals", icon: Gift, path: "referrals", roles: ["admin"] },
     { name: "Transactions", icon: DollarSign, path: "transactions", roles: ["admin"] },
+        { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
+
   ];
 
   const allowedNavigation = navigation.filter((item) => item.roles.includes(userRole));
@@ -46,7 +47,7 @@ const Sidebar = ({ userRole, handleLogout }) => {
             <div className="flex items-center space-x-2">
               <img
                 className="h-10 w-auto rounded-lg shadow-md"
-                src="https://placehold.co/100x100/E5E7EB/4B5563?text=Logo"
+                src="src\assets\erus.jpg"
                 alt="Erus Academy Logo"
               />
               <span className="text-xl font-bold text-gray-900">Erus Academy</span>

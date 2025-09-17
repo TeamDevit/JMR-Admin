@@ -6,4 +6,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),react()
   ],
+    base: "/https://github.com/TeamDevit/JMR-Admin/"
+
 })
+
