@@ -19,7 +19,7 @@ import AnnouncementsView from "../features/announcements/AnnouncementsView";
 import ReferralsView from "../features/referrals/ReferralsView";
 import ModulesView from "../features/modules/ModulesView";
 import ModuleFormView from "../features/modules/ModuleFormView";
-
+import api from "../utils/api";
 // Pages
 import Avatars from "../pages/Avatars";
 import StudentPanel from "../pages/StudentPanel";
@@ -130,19 +130,29 @@ const AdminDashboard = () => {
   ]);
 
   // Authentication handlers
-  const handleLogin = (email, password) => {
-    if (email === "admin@erus.com" && password === "admin123") {
-      setUserRole('admin');
-      setCurrentView('courses');
-      toast.success("Signed in as Admin!");
-    } else if (email === "instructor@erus.com" && password === "instructor123") {
-      setUserRole('instructor');
-      setCurrentView('courses');
-      toast.success("Signed in as Instructor!");
-    } else {
-      toast.error("Invalid credentials.");
+ const handleLogin = async (email, password) => { // <-- MUST be ASYNC
+    try {
+        // 🛑 CRITICAL: Make the API call to your backend
+        const response = await api.post('/admin/login', { email, password });
+
+        const { token, admin } = response.data;
+        
+        // 🔑 THE FIX: Store the token with the correct key
+        if (token) {
+            localStorage.setItem('token', token); // Use 'token' key
+        }
+        
+        setUserRole(admin.role); 
+        setCurrentView('dashboard'); 
+        toast.success(`Signed in as ${admin.role.toUpperCase()}!`);
+
+    } catch (error) {
+        // Handle failed login attempts (e.g., invalid credentials)
+        const message = error.response?.data?.error || 'Login failed. Invalid credentials.';
+        toast.error(message);
     }
-  };
+};
+
 
   const handleLogout = () => {
     setUserRole(null);

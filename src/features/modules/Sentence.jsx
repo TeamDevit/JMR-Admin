@@ -1,7 +1,16 @@
+// Sentence.js
+
 import React, { useState, useRef, useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
+// --- NEW IMPORT ---
+import { createModule } from '../../services/moduleService'; 
+// Also import toast for error messages (though it's handled in api.js, 
+// keeping it here is safe if you need custom success messages)
+import toast from 'react-hot-toast';
+// ------------------
 
+
+// ... existing state and icon components ...
 
 const Sentence = () => {
 const [avatarId, setAvatarId] = useState("");
@@ -66,36 +75,71 @@ const [avatarId, setAvatarId] = useState("");
     navigate(-1); // go back one step
   };
 
-  const handleGenerate = async () => {
-    if (!avatarId.trim()) {
-      alert("Please enter an Avatar ID");
+  // Sentence.js
+
+const handleGenerate = async () => {
+    // 1. Basic validation
+    if (!avatarId.trim() || dragDropFiles.length === 0) {
+      toast.error("Please enter an Avatar ID and upload a document file.");
       return;
     }
     
     setIsGenerating(true);
     setProgress(0);
     
-    // Simulate progress
+    // 2. Prepare FormData for file/text upload
+    const formData = new FormData();
+    formData.append('avatarId', avatarId);
+    
+    // Append the document file(s)
+    dragDropFiles.forEach((file) => {
+        // NOTE: The backend must be configured to read this key ('documentFiles').
+        // You might need to confirm the exact key name with your backend developer.
+        formData.append('documentFiles', file); 
+    });
+
+    // Append background image file(s)
+    bgImages.forEach((file) => {
+        // NOTE: Confirm the key name ('bgImageFiles') with your backend developer.
+        formData.append('bgImageFiles', file); 
+    });
+
+    // 3. Simulate progress for better UX (Keep this)
     const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 10;
-      });
+        setProgress(prev => (prev < 90 ? prev + 10 : prev));
     }, 300);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    clearInterval(interval);
-    setProgress(100);
-    setIsGenerating(false);
-    setShowSuccess(true);
-    
-    setTimeout(() => setShowSuccess(false), 3000);
-  };
+    try {
+        // 4. API CALL INTEGRATION
+        // We use 'sentence' as the moduleType and send the FormData object.
+        // We also need to send the 'Content-Type': 'multipart/form-data' header.
+        // Since your 'fetchData' uses Axios, it should handle the header automatically
+        // when a FormData object is provided, but we'll modify the call slightly for safety.
+        
+        const response = await createModule('sentence', formData); // Correct moduleType is 'sentence'
+
+        // 5. Cleanup and Success
+        clearInterval(interval);
+        setProgress(100);
+        setIsGenerating(false);
+        setShowSuccess(true);
+        toast.success("Sentence Pronunciation job started successfully!");
+        
+        // Optionally reset the form state
+        setAvatarId('');
+        setBgImages([]);
+        setDragDropFiles([]);
+        
+        setTimeout(() => setShowSuccess(false), 3000);
+
+    } catch (error) {
+        // Error handling is already in moduleService.js, but we stop loading here
+        clearInterval(interval);
+        setProgress(0); // Reset progress on failure
+        setIsGenerating(false);
+        // toast.error(...) is handled in the service, but you could add more here if needed.
+    }
+};
 
  const handleDownloadTemplate = () => {
     // Create a sample template download
@@ -447,15 +491,18 @@ const [avatarId, setAvatarId] = useState("");
       </div>
       
       {/* Add some custom animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-in-out;
-        }
-      `}</style>
+    <style>
+  {`
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+  `}
+</style>
+
     </div>
   );
 };
