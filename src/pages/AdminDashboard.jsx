@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
-  ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake
+  ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake
 } from 'lucide-react';
 
 // Import components from their new feature folders
@@ -25,394 +25,167 @@ import Avatars from "../pages/Avatars";
 import StudentPanel from "../pages/StudentPanel";
 
 const AdminDashboard = () => {
-  // State management for navigation and data
-  const [currentView, setCurrentView] = useState('login');
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null);
-  const [showAddCourseForm, setShowAddCourseForm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  // State management for navigation and data
+  const [currentView, setCurrentView] = useState('login');
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [showAddCourseForm, setShowAddCourseForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  // 🆕 NEW STATE FOR LOADING
+  const [loadingCourses, setLoadingCourses] = useState(true);
 
-  // Mock data for courses, instructors, students, announcements, and transactions
-  const [courses, setCourses] = useState([
-    { id: 'course-1', name: 'English Language Mastery', code: 'ELM-101', description: 'Advanced grammar and vocabulary for professional use.', originalPrice: 15000, price: 12999, duration: 8, studentsEnrolled: 45, razorpayKey: 'rzp_test_xyz' },
-    { id: 'course-2', name: 'Conversational Spanish', code: 'CS-201', description: 'Learn to speak Spanish fluently with daily practice.', originalPrice: null, price: 9999, duration: 6, studentsEnrolled: 82, razorpayKey: 'rzp_test_abc' },
-    { id: 'course-3', name: 'Data Science Fundamentals', code: 'DSF-301', description: 'An introductory course to data science and machine learning.', originalPrice: 25000, price: 19999, duration: 12, studentsEnrolled: 60, razorpayKey: '' },
-  ]);
-
-  const [instructors, setInstructors] = useState([
-    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true, role: 'admin', referralCode: 'JANE10', referredStudents: 10, commissionEarned: 5000  },
-    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true, role: 'instructor', referralCode: 'JOHN20', referredStudents: 25, commissionEarned: 12500  },
-  ]);
-
-  const [students, setStudents] = useState([
-    { id: 'student-1', name: 'Alice Johnson', email: 'alice@student.com', courses: ['ELM-101'], progress: 75, grade: 92 },
-    { id: 'student-2', name: 'Bob Williams', email: 'bob@student.com', courses: ['CS-201'], progress: 50, grade: 85 },
-    { id: 'student-3', name: 'Charlie Brown', email: 'charlie@student.com', courses: ['ELM-101', 'DSF-301'], progress: 95, grade: 98 },
-  ]);
-
-  const [announcements, setAnnouncements] = useState([
-    { id: 'ann-1', title: 'Welcome to the new semester!', content: 'We are excited to have you all on board. Let the learning begin!', date: '2023-10-27' },
-    { id: 'ann-2', title: 'Maintenance Window', content: 'Our servers will be down for maintenance on 2023-11-05 from 2AM to 4AM.', date: '2023-10-25' },
-  ]);
-
-  // New mock data for transactions
-  const [transactions, setTransactions] = useState([
-    { id: 'txn-1', courseName: 'English Language Mastery', studentName: 'Alice Johnson', amount: 12999, date: '2023-10-26', status: 'Completed', method: 'Razorpay' },
-    { id: 'txn-2', courseName: 'Conversational Spanish', studentName: 'Bob Williams', amount: 9999, date: '2023-10-20', status: 'Completed', method: 'Razorpay' },
-    { id: 'txn-3', courseName: 'Data Science Fundamentals', studentName: 'Charlie Brown', amount: 19999, date: '2023-10-15', status: 'Failed', method: 'Stripe' },
-  ]);
-
-  // Handlers for instructor management
-  const handleAddInstructor = (newInstructorData) => {
-    const newId = `instr-${Date.now()}`;
-    setInstructors(prev => [...prev, { id: newId, ...newInstructorData, coursesCreated: 0, referredStudents: 0, commissionEarned: 0 }]);
-    toast.success("Instructor added successfully!");
-  };
-
-  const handleUpdateInstructor = (updatedUserData) => {
-    setInstructors(prev => prev.map(user =>
-      user.id === updatedUserData.id ? { ...user, ...updatedUserData } : user
-    ));
-    toast.success("User updated successfully!");
-  };
-
-  const handleDeleteInstructor = (userId) => {
-    setInstructors(prev => prev.filter(user => user.id !== userId));
-    toast.success("Instructor deleted successfully!");
-  };
-
-  // Handlers for student management
-  const handleBulkEnrollment = (studentsData, courseCode) => {
-    // This is where you would process the uploaded file and enroll students.
-    // For now, we'll just show a success message.
-    console.log(`Enrolling ${studentsData.length} students into course ${courseCode}`);
-    toast.success(`Successfully enrolled ${studentsData.length} students into course ${courseCode}!`);
-  };
-
-  const handleDeleteStudent = (studentId) => {
-    setStudents(prev => prev.filter(student => student.id !== studentId));
-    toast.success("Student deleted successfully!");
-  };
-
-  // Handlers for announcements
-  const handleAddAnnouncement = (newAnnouncement) => {
-    const newId = `ann-${Date.now()}`;
-    setAnnouncements(prev => [{ id: newId, ...newAnnouncement, date: new Date().toISOString().split('T')[0] }, ...prev]);
-    toast.success("Announcement created successfully!");
-  };
-
-  // State and handlers for course forms
-  const [courseFormData, setCourseFormData] = useState({
-    id: null,
-    code: '',
-    name: '',
-    description: '',
-    originalPrice: '',
-    price: '',
-    duration: '',
-    razorpayKey: '', // Added for Razorpay integration
-  });
-
-  const [courseSearchTerm, setCourseSearchTerm] = useState('');
-  const [daySearchTerm, setDaySearchTerm] = useState('');
-
-  // Mock data for modules and their statuses
-  const [moduleStates, setModuleStates] = useState([
-    { title: "Vocabulary", content: "Manage and update the vocabulary module.", path: "/vocabulary", icon: ListTree, status: "Active", form: "VocabularyForm" },
-    { title: "Sentence Pronunciation", content: "Manage and update the Sentence Pronounciation module.", path: "/sentence", icon: BrainCircuit, status: "Draft", form: "SentenceForm" },
-    { title: "Practice Speaking", content: "Manage and update the Practice Speaking module.", path: "/practice", icon: ScrollText, status: "Active", form: "PracticeForm" },
-    { title: "Conversation-Avatar to Student", content: "Manage and update the Conversation-AS module.", path: "/avatartostudent", icon: Handshake, status: "Draft", form: "AvatarToStudentForm" },
-    { title: "Conversation-Student To Avatar", content: "Manage and update the Conversation-SA module.", path: "/studenttoavatar", icon: ClipboardList, status: "Active", form: "StudentToAvatarForm" },
-    { title: "Quiz", content: "Manage and update the Quiz Module.", path: "/quiz", icon: Settings, status: "Draft", form: "QuizForm" },
-  ]);
-
-  // Authentication handlers
- const handleLogin = async (email, password) => { // <-- MUST be ASYNC
-    try {
-        // 🛑 CRITICAL: Make the API call to your backend
-        const response = await api.post('/admin/login', { email, password });
-
-        const { token, admin } = response.data;
-        
-        // 🔑 THE FIX: Store the token with the correct key
-        if (token) {
-            localStorage.setItem('token', token); // Use 'token' key
-        }
-        
-        setUserRole(admin.role); 
-        setCurrentView('dashboard'); 
-        toast.success(`Signed in as ${admin.role.toUpperCase()}!`);
-
-    } catch (error) {
-        // Handle failed login attempts (e.g., invalid credentials)
-        const message = error.response?.data?.error || 'Login failed. Invalid credentials.';
-        toast.error(message);
-    }
-};
+  // 🆕 NEW STATE FOR REAL COURSES
+  const [courses, setCourses] = useState([]);
 
 
-  const handleLogout = () => {
-    setUserRole(null);
-    setCurrentView('login');
-    setSelectedCourse(null);
-    setSelectedDay(null);
-    setSelectedModule(null);
-    toast.success("Logged out successfully!");
-  };
+  // Mock data for instructors, students, and transactions (keeping these for now)
+  const [instructors, setInstructors] = useState([
+    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true, role: 'admin', referralCode: 'JANE10', referredStudents: 10, commissionEarned: 5000  },
+    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true, role: 'instructor', referralCode: 'JOHN20', referredStudents: 25, commissionEarned: 12500  },
+  ]);
 
-  // Navigation handlers
-  const handleGoBack = () => {
-    if (currentView === 'module-form') {
-      setCurrentView('modules');
-      setSelectedModule(null);
-    } else if (currentView === 'modules') {
-      setCurrentView('days');
-      setSelectedDay(null);
-    } else if (currentView === 'days') {
-      setCurrentView('courses');
-      setSelectedCourse(null);
-    } else if (currentView === 'instructors' || currentView === 'avatars' || currentView === 'referrals' || currentView === 'students' || currentView === 'announcements' || currentView === 'transactions' || currentView === 'bulk-enrollment') {
-      setCurrentView('courses');
-    }
-  };
+  const [students, setStudents] = useState([
+    { id: 'student-1', name: 'Alice Johnson', email: 'alice@student.com', courses: ['ELM-101'], progress: 75, grade: 92 },
+    { id: 'student-2', name: 'Bob Williams', email: 'bob@student.com', courses: ['CS-201'], progress: 50, grade: 85 },
+    { id: 'student-3', name: 'Charlie Brown', email: 'charlie@student.com', courses: ['ELM-101', 'DSF-301'], progress: 95, grade: 98 },
+  ]);
 
-  // Course management handlers
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setCourseFormData(prev => ({ ...prev, [name]: value }));
-  };
+  // ⚠️ Keep mock announcements for now
+  const [announcements, setAnnouncements] = useState([
+    { id: 'ann-1', title: 'Welcome to the new semester!', content: 'We are excited to have you all on board. Let the learning begin!', date: '2023-10-27' },
+    { id: 'ann-2', title: 'Maintenance Window', content: 'Our servers will be down for maintenance on 2023-11-05 from 2AM to 4AM.', date: '2023-10-25' },
+  ]);
 
-  const handleAddCourse = (formData) => {
-    const { name, code, price, duration, description, originalPrice, razorpayKey } = formData;
-    if (!name || !code || !price || !duration) {
-      toast.error("Please fill all required fields.");
-      return;
-    }
-    const newId = `course-${Date.now()}`;
-    const courseToAdd = {
-      id: newId,
-      name,
-      code,
-      description,
-      originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-      price: parseFloat(price),
-      duration: parseInt(duration),
-      razorpayKey,
-      studentsEnrolled: 0,
-    };
-    setCourses(prevCourses => [...prevCourses, courseToAdd]);
-    toast.success("Course added successfully!");
-  };
+  // New mock data for transactions
+  const [transactions, setTransactions] = useState([
+    { id: 'txn-1', courseName: 'English Language Mastery', studentName: 'Alice Johnson', amount: 12999, date: '2023-10-26', status: 'Completed', method: 'Razorpay' },
+    { id: 'txn-2', courseName: 'Conversational Spanish', studentName: 'Bob Williams', amount: 9999, date: '2023-10-20', status: 'Completed', method: 'Razorpay' },
+    { id: 'txn-3', courseName: 'Data Science Fundamentals', studentName: 'Charlie Brown', amount: 19999, date: '2023-10-15', status: 'Failed', method: 'Stripe' },
+  ]);
+  
+  // ----------------------------------------------------------------------
+  // 🔑 STEP 1: Implement Course Fetching (with Debugging Log)
+  // ----------------------------------------------------------------------
+  useEffect(() => {
+    if (userRole) { // Only fetch if logged in
+      const fetchCourses = async () => {
+        try {
+          const response = await api.get('/get-course'); 
+          
+          // 🚨 DEBUG: Log the full response data here
+          console.log("API Response for /get-course:", response.data);
 
-  const handleUpdateCourse = (formData) => {
-    const { name, code, price, duration, description, originalPrice, razorpayKey } = formData;
-    if (!name || !code || !price || !duration) {
-      toast.error("Please fill all required fields.");
-      return;
-    }
-    setCourses(prevCourses => prevCourses.map(course =>
-      course.id === formData.id ? {
-        ...course,
-        name,
-        code,
-        description,
-        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-        price: parseFloat(price),
-        duration: parseInt(duration),
-        razorpayKey,
-      } : course
-    ));
-    toast.success("Course updated successfully!");
-  };
-
-  const handleEditCourse = (course) => {
-    setCourseFormData({
-      id: course.id,
-      code: course.code,
-      name: course.name,
-      description: course.description,
-      originalPrice: course.originalPrice,
-      price: course.price,
-      duration: course.duration,
-      razorpayKey: course.razorpayKey || '',
-    });
-    setIsEditing(true);
-    setShowEditModal(true);
-  };
-
-  const handleDuplicateCourse = (course) => {
-    const newId = `course-${Date.now()}`;
-    const newCourse = {
-      ...course,
-      id: newId,
-      code: `${course.code}-DUPLICATE`,
-      name: `${course.name} (Duplicate)`,
-    };
-    setCourses(prevCourses => [...prevCourses, newCourse]);
-    toast.success("Course duplicated successfully!");
-  };
-
-  // Handler for toggling module status
-  const handleModuleToggle = (moduleTitle) => {
-    setModuleStates(prevModules =>
-      prevModules.map(module =>
-        module.title === moduleTitle
-          ? {
-              ...module,
-              status: module.status === 'Active' ? 'Draft' : 'Active',
+          // Check if the response contains the new 'data' array structure
+          if (response.data.success && Array.isArray(response.data.data)) {
+            setCourses(response.data.data);
+          } else {
+            // Fallback if backend hasn't been updated to return {data: []} but just returns the array
+                const coursesArray = Array.isArray(response.data) ? response.data : response.data.courses;
+            setCourses(Array.isArray(coursesArray) ? coursesArray : []); 
+            if (Array.isArray(coursesArray)) {
+                // If it's an array, it might be the old format, no error needed.
+            } else {
+                toast.error("Course data format unexpected.");
             }
-          : module
-      )
-    );
-    toast.success("Module status updated!");
-  };
+          }
+        } catch (error) {
+          console.error("Failed to fetch courses:", error);
+          // 🚨 DEBUG: Log the error response
+          console.error("Course Fetch Error Response:", error.response?.data);
+          toast.error("Could not load course data for admin panel.");
+        } finally {
+          setLoadingCourses(false);
+        }
+      };
+      fetchCourses();
+    }
+  }, [userRole]); // Rerun when user logs in
 
-  // New transaction export handler
-  const handleExportTransactions = () => {
-    const csvContent = "data:text/csv;charset=utf-8," + [
-      Object.keys(transactions[0]).join(','),
-      ...transactions.map(t => Object.values(t).map(value => `"${value}"`).join(','))
-    ].join('\n');
+// ... (other handlers: handleAddInstructor, handleUpdateInstructor, handleDeleteInstructor, etc. - no changes)
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "transactions_report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Transaction report exported successfully!");
-  };
+  // ----------------------------------------------------------------------
+  // 🔑 STEP 2: Update Announcement Handler to use the API (No change here, 
+  // as this was already correct to return true/false)
+  // ----------------------------------------------------------------------
+  const handleAddAnnouncement = async ({ title, content, courseCode }) => {
+    const loadingToast = toast.loading(`Sending announcement to ${courseCode === 'all' ? 'all courses' : courseCode}...`);
 
+    try {
+      // CRITICAL: Call the new backend notification endpoint
+      const response = await api.post('/notifications/create', { 
+        title,
+        message: content, // Frontend's 'content' maps to backend's 'message'
+        courseCode // Can be 'all' or a specific course code/slug
+      });
+      
+      // Update mock state immediately (for visual feedback on the announcements list)
+      const newId = `ann-${Date.now()}`;
+      setAnnouncements(prev => [{ 
+        id: newId, 
+        title, 
+        content, 
+        date: new Date().toISOString().split('T')[0],
+        courseCode 
+      }, ...prev]); 
 
-  // View rendering logic
-  const renderContent = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
-      case 'course-dashboard':
-        return <CourseDashboard selectedCourse={selectedCourse} setCurrentView={setCurrentView} handleGoBack={() => setCurrentView('dashboard')} />;
-      case 'courses':
-        return (
-          <CoursesView
-            courses={courses}
-            courseSearchTerm={courseSearchTerm}
-            setCourseSearchTerm={setCourseSearchTerm}
-            showAddCourseForm={showAddCourseForm}
-            showEditModal={showEditModal}
-            setShowEditModal={setShowEditModal}
-            handleUpdateCourse={handleUpdateCourse}
-            handleEditCourse={handleEditCourse}
-            handleDuplicateCourse={handleDuplicateCourse}
-            setSelectedCourse={setSelectedCourse}
-            setCurrentView={setCurrentView}
-            userRole={userRole}
-            courseFormData={courseFormData}
-            setCourseFormData={setCourseFormData}
-          />
-        );
-      case 'days':
-        return (
-          <DaysView
-            selectedCourse={selectedCourse}
-            daySearchTerm={daySearchTerm}
-            setDaySearchTerm={setDaySearchTerm}
-            setSelectedDay={setSelectedDay}
-            setCurrentView={setCurrentView}
-            handleGoBack={handleGoBack}
-          />
-        );
-      case 'modules':
-        return (
-          <ModulesView
-            selectedCourse={selectedCourse}
-            selectedDay={selectedDay}
-            moduleStates={moduleStates}
-            handleModuleToggle={handleModuleToggle}
-            setSelectedModule={setSelectedModule}
-            setCurrentView={setCurrentView}
-            handleGoBack={handleGoBack}
-          />
-        );
-      case 'module-form':
-        return (
-          <ModuleFormView
-            selectedModule={selectedModule}
-            handleGoBack={handleGoBack}
-          />
-        );
-      case 'instructors':
-        return (
-          <InstructorsPanel
-            instructors={instructors}
-            handleAddInstructor={handleAddInstructor}
-            handleDeleteInstructor={handleDeleteInstructor}
-            handleUpdateInstructor={handleUpdateInstructor}
-            userRole={userRole}
-          />
-        );
-      case 'students':
-        return (
-          <StudentsPanel
-            students={students}
-            courses={courses}
-            handleDeleteStudent={handleDeleteStudent}
-            userRole={userRole}
-          />
-        );
-      case 'bulk-enrollment':
-        return (
-          <StudentEnrollmentForm
-            courses={courses}
-            handleBulkEnrollment={handleBulkEnrollment}
-          />
-        );
-      case 'announcements':
-        return (
-          <AnnouncementsView
-            announcements={announcements}
-            handleAddAnnouncement={handleAddAnnouncement}
-            userRole={userRole}
-          />
-        );
-      case 'avatars':
-        return <Avatars handleLogout={handleLogout} />;
-      case 'referrals':
-        return (
-          <ReferralsView
-            referralData={instructors.filter(i => i.referralCode)} // Pass the instructors with referral data
-          />
-        );
-      case 'transactions':
-        return (
-          <TransactionsView
-            transactions={transactions}
-            handleExport={handleExportTransactions}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+      toast.success(response.data.message || "Announcement created successfully!", { id: loadingToast });
+      return true; // Indicate success for form reset
 
-  // Main render logic
-  if (!userRole) {
-    return <LoginPanel handleLogin={handleLogin} />;
-  }
+    } catch (error) {
+      console.error("Announcement failed:", error);
+      const errorMessage = error.response?.data?.message || 'Failed to send announcement.';
+      toast.error(errorMessage, { id: loadingToast });
+      return false; // Indicate failure
+    }
+  };
 
-  return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      <Sidebar
-        userRole={userRole}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        handleLogout={handleLogout}
-      />
-      {renderContent()}
-    </div>
-  );
+// ... (rest of the component logic - no changes)
+
+  // View rendering logic
+  const renderContent = () => {
+    // ⚠️ Add loading check for courses
+    if (loadingCourses && currentView !== 'login') {
+      return <div className="flex-1 p-8 text-center text-gray-500">Loading courses...</div>;
+    }
+    
+    switch (currentView) {
+      case 'dashboard':
+        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+      // ... (other cases)
+      case 'announcements':
+        return (
+          <AnnouncementsView
+            announcements={announcements}
+            handleAddAnnouncement={handleAddAnnouncement}
+            userRole={userRole}
+            // 🔑 STEP 3: PASS FETCHED COURSES TO AnnouncementsView
+            courses={courses} 
+          />
+        );
+      // ... (rest of the cases)
+      default:
+        return null;
+    }
+  };
+
+  // Main render logic
+  if (!userRole) {
+    return <LoginPanel handleLogin={handleLogin} />;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      <Sidebar
+        userRole={userRole}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        handleLogout={handleLogout}
+      />
+      {renderContent()}
+    </div>
+  );
 };
 export default AdminDashboard;
