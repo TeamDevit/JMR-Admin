@@ -31,75 +31,75 @@ import Quiz from "./features/modules/Quiz";
 
 // Pages
 import Avatars from "./pages/Avatars";
-import AdminDashboard from "./pages/AdminDashboard";
-import StudentPanel from "./pages/StudentPanel";
 
 function App() {
-  const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
-  const handleLogin = (email, password) => {
-    if (email === "admin@erus.com" && password === "admin123") {
-      setUserRole("admin");
-      toast.success("Signed in as Admin!");
-    } else if (email === "instructor@erus.com" && password === "instructor123") {
-      setUserRole("instructor");
-      toast.success("Signed in as Instructor!");
-    } else {
-      toast.error("Invalid credentials.");
-    }
-  };
+  const handleLogin = (email, password) => {
+    if (email === "admin@erus.com" && password === "admin123") {
+      setUserRole("admin");
+      toast.success("Signed in as Admin!");
+    } else if (email === "instructor@erus.com" && password === "instructor123") {
+      setUserRole("instructor");
+      toast.success("Signed in as Instructor!");
+    } else {
+      toast.error("Invalid credentials.");
+    }
+  };
 
-  const handleLogout = () => {
-    setUserRole(null);
-    toast.success("Logged out successfully!");
-  };
+  const handleLogout = () => {
+    setUserRole(null);
+    toast.success("Logged out successfully!");
+  };
 
-  return (
-    <>
-      <Toaster position="top-right" reverseOrder={false} />
+  return (
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
 
-      {userRole ? (
-        <div className="md:pl-64 min-h-screen bg-gray-50">
-          <Routes>
-            <Route
-              path="/"
-              element={<MainLayout handleLogout={handleLogout} userRole={userRole} />}
-            >
-              <Route index element={<MainDashboard />} />
-              <Route path="adminpanel" element={<AdminDashboard userRole={userRole} />} />
-              <Route path="studentpanel" element={<StudentPanel />} />
-              <Route path="avatars" element={<Avatars />} />
-              <Route path="courses" element={<CoursesView userRole={userRole} />} />
-              {/* Nested route for DaysView */}
-              <Route path="courses/:courseId" element={<DaysView />} />
-              {/* Nested route for ModulesView */}
-              <Route path="courses/:courseId/days/:dayId" element={<ModulesView />} />
+      {userRole ? (
+        <div className="md:pl-64 min-h-screen bg-gray-50">
+          <Routes>
+            <Route
+              path="/"
+              element={<MainLayout handleLogout={handleLogout} userRole={userRole} />}
+            >
+              <Route index element={<MainDashboard />} />
+              <Route path="avatars" element={<Avatars />} />
+              <Route path="courses" element={<CoursesView userRole={userRole} />} />
 
-              <Route path="vocabulary" element={<Vocabulary />} />
-              <Route path="sentence" element={<Sentence />} />
-              <Route path="practice" element={<Practice />} />
-              <Route path="avatartostudent" element={<AvatarToStudent />} />
-              <Route path="studenttoavatar" element={<StudentToAvatar />} />
-              <Route path="quiz" element={<Quiz />} />
+              {/* Route for the Days list of a course */}
+              <Route path="courses/:courseId" element={<DaysView />} />
+              
+              {/* Route for the Modules list of a specific day */}
+              <Route path="courses/:courseId/days/:dayId" element={<ModulesView />} />
+              
+              {/* Separate routes for each form. They will now open as full pages. */}
+              <Route path="courses/:courseId/days/:dayId/vocabulary" element={<Vocabulary />} />
+              <Route path="courses/:courseId/days/:dayId/sentence" element={<Sentence />} />
+              <Route path="courses/:courseId/days/:dayId/practice" element={<Practice />} />
+              <Route path="courses/:courseId/days/:dayId/avatartostudent" element={<AvatarToStudent />} />
+              <Route path="courses/:courseId/days/:dayId/studenttoavatar" element={<StudentToAvatar />} />
+              <Route path="courses/:courseId/days/:dayId/quiz" element={<Quiz />} />
 
-              <Route path="courseform" element={<CourseForm />} />
-              <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
-              <Route path="students" element={<StudentsPanel userRole={userRole} />} />
-              <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />
-              <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
-              <Route path="transactions" element={<TransactionsView />} />
-              <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
-              <Route path="module-form" element={<ModuleFormView />} />
-              <Route path="account" element={<AccountPage />} />
-              <Route path="*" element={<div className="p-8">Page not found</div>} />
-            </Route>
-          </Routes>
-        </div>
-      ) : (
-        <LoginPanel handleLogin={handleLogin} />
-      )}
-    </>
-  );
+              {/* Other top-level routes */}
+              <Route path="courseform" element={<CourseForm />} />
+              <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
+              <Route path="students" element={<StudentsPanel userRole={userRole} />} />
+              <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />
+              <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
+              <Route path="transactions" element={<TransactionsView />} />
+              <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
+              <Route path="module-form" element={<ModuleFormView />} />
+              <Route path="account" element={<AccountPage />} />
+              <Route path="*" element={<div className="p-8">Page not found</div>} />
+            </Route>
+          </Routes>
+        </div>
+      ) : (
+        <LoginPanel handleLogin={handleLogin} />
+      )}
+    </>
+  );
 }
 
 export default App;

@@ -415,7 +415,7 @@ const handleDownloadTemplate = () => {
                 ) : (
                   <>
                     <StarIcon className="group-hover:rotate-12 transition-transform" />
-                    <span>Generate Vocabulary</span>
+                    <span>Generate</span>
                   </>
                 )}
               </div>

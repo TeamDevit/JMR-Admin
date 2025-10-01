@@ -1,78 +1,81 @@
-import { fetchData } from '../utils/api';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
-import axios from 'axios';
 
-// --- Module Retrieval ---
-const CANDIDATE_CREATE_ENDPOINTS = (moduleType) => [
-  `/create-${moduleType}`,   // preferred based on backend list
-  `/${moduleType}`,          // e.g., /sentence or /sentences
-  `/${moduleType}s`,         // plural fallback
-  `/modules`                 // generic fallback if you later add it
-];
-// GET /get-vocabulary, GET /get-sentence, etc.
-export const fetchAllModules = async (moduleType) => {
-    // moduleType should be one of: 'vocabulary', 'sentence', 'practice', 'quiz', 'avatar-student', 'student-avatar'
-    const endpoint = `/get-${moduleType}`;
-    return fetchData(endpoint);
+// This function holds all your API endpoints for modules
+const ENDPOINTS = {
+    'quiz': {
+        create: '/modules/create-quiz', 
+        createBulk: '/modules/create-quiz',
+        get: (id) => `/modules/quiz/${id}`,
+        update: (id) => `/modules/quiz/${id}`,
+        delete: (id) => `/modules/quiz/${id}`,
+    },
+    // Module 2: Avatar to Student
+    'avatar-to-student': {
+        create: '/modules/create-avatar-student', // For single item (used in loop)
+        createBulk: '/modules/create-avatar-student', // For array (if backend supported it)
+    },
+    // Module 3: Student to Avatar (Assumed similar CRUD endpoints)
+    'student-to-avatar': {
+        create: '/modules/create-student-to-avatar', 
+        createBulk: '/modules/create-student-to-avatar',
+    },
+    // Module 4: Vocabulary
+    'vocabulary': {
+        create: '/modules/create-vocabulary', 
+        createBulk: '/modules/create-vocabulary',
+    },
+    // Module 5: Practice Sentences
+    'practice-sentence': {
+        create: '/modules/create-practice-sentence', 
+        createBulk: '/modules/create-practice-sentence',
+    },
+    'sentence': {
+        create: '/api/v1/modules/create-sentence',
+        // ... other sentence endpoints
+    }
 };
 
-// GET /day-vocabulary/:dayId, GET /day-sentence/:dayId, etc.
-export const fetchDayModules = async (moduleType, dayId) => {
-    const endpoint = `/day-${moduleType}/${dayId}`;
-    return fetchData(endpoint);
-};
+/**
+ * Generic function to handle API actions for any module type.
+ * @param {string} action - 'create', 'createBulk', 'get', 'update', 'delete'.
+ * @param {string} moduleType - 'quiz', 'vocabulary', 'sentence', etc.
+ * @param {Object} data - The data to send with the request.
+ * @param {string} id - The ID of the module (for get, update, delete).
+ */
+export const handleModuleAction = async (action, moduleType, data = null, id = null) => {
+    try {
+        const endpoint = ENDPOINTS[moduleType][action];
+        if (!endpoint) {
+            throw new Error(`Endpoint for action '${action}' and module '${moduleType}' is not defined.`);
+        }
 
-// GET /get-vocabulary/:id, GET /get-sentence/:id, etc.
-export const fetchModuleDetails = async (moduleType, id) => {
-    const endpoint = `/get-${moduleType}/${id}`;
-    return fetchData(endpoint);
-};
+        let response;
+        const url = typeof endpoint === 'function' ? endpoint(id) : endpoint;
 
-// --- Module CRUD Operations ---
+        switch (action) {
+            case 'create':
+            case 'createBulk':
+                response = await api.post(url, data);
+                break;
+            case 'get':
+                response = await api.get(url);
+                break;
+            case 'update':
+                response = await api.put(url, data);
+                break;
+            case 'delete':
+                response = await api.delete(url);
+                break;
+            default:
+                throw new Error('Unsupported action');
+        }
 
-// POST /create-vocabulary, POST /create-sentence, etc.
-
-export const createModule = async (moduleType, data, opts = {}) => {
-  if (!moduleType) throw new Error('moduleType is required');
-
-  // Special-case 'sentence' because backend uses /sentences
-  let endpoint;
-  if (moduleType === 'sentence') {
-    endpoint = '/sentences';
-  } else if (moduleType === 'avatar-student') {
-    endpoint = '/create-avatar-student';
-  } else if (moduleType === 'student-avatar') {
-    endpoint = '/create-student-avatar';
-  } else {
-    endpoint = `/create-${moduleType}`;
-  }
-
-
-  return fetchData(endpoint, { method: 'POST', data, headers: opts.headers || {} });
-};
-
-// PUT /update-vocabulary/:id, PUT /update-sentence/:id, etc.
-export const updateModule = async (moduleType, id, data) => {
-    const endpoint = `/update-${moduleType}/${id}`;
-    return fetchData(endpoint, { method: 'PUT', data });
-};
-
-
-// DELETE /delete-vocabulary/:id, DELETE /delete-sentence/:id, etc.
-export const deleteModule = async (moduleType, id) => {
-    const endpoint = `/delete-${moduleType}/${id}`;
-    return fetchData(endpoint, { method: 'DELETE' });
-};
-
-
-// This function will be used by the ModulesView to handle status toggling
-export const toggleModuleStatus = async (moduleType, id, newStatus) => {
-    const endpoint = `/update-${moduleType}/${id}`;
-    // This sends the updated status field to the backend
-    return fetchData(endpoint, { method: 'PUT', data: { status: newStatus } });
-};
-
-
-export default {
-  createModule,
+        toast.success(`${moduleType} ${action}d successfully!`);
+        return response.data;
+    } catch (error) {
+        const message = error.response?.data?.error || `Failed to ${action} ${moduleType}.`;
+        toast.error(message);
+        throw error;
+    }
 };

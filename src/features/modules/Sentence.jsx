@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // --- NEW IMPORT ---
-import { createModule } from '../../services/moduleService'; 
+import { handleModuleAction } from '../../services/moduleService';
 // Also import toast for error messages (though it's handled in api.js, 
 // keeping it here is safe if you need custom success messages)
 import toast from 'react-hot-toast';
@@ -116,7 +116,7 @@ const handleGenerate = async () => {
         // Since your 'fetchData' uses Axios, it should handle the header automatically
         // when a FormData object is provided, but we'll modify the call slightly for safety.
         
-        const response = await createModule('sentence', formData); // Correct moduleType is 'sentence'
+        const response = await handleModuleAction('create', 'sentence', sentenceData); // Correct moduleType is 'sentence'
 
         // 5. Cleanup and Success
         clearInterval(interval);
@@ -458,7 +458,7 @@ const handleGenerate = async () => {
                 ) : (
                   <>
                     <StarIcon className="group-hover:rotate-12 transition-transform" />
-                    <span>Generate Vocabulary</span>
+                    <span>Generate</span>
                   </>
                 )}
               </div>
