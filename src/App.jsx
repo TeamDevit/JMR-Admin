@@ -3,7 +3,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { Routes, Route } from "react-router-dom";
 
 // Top-level components and layouts
-import LoginPanel from "./components/LoginPanel";
+// NOTE: LoginPanel is removed as we are bypassing the login screen
 import MainLayout from "./layouts/MainLayout";
 
 // Feature-based imports
@@ -33,21 +33,13 @@ import Quiz from "./features/modules/Quiz";
 import Avatars from "./pages/Avatars";
 
 function App() {
-  const [userRole, setUserRole] = useState(null);
+  // *** MODIFICATION HERE: Default userRole is set to "admin" to bypass login ***
+  const [userRole, setUserRole] = useState("admin");
 
-  const handleLogin = (email, password) => {
-    if (email === "admin@erus.com" && password === "admin123") {
-      setUserRole("admin");
-      toast.success("Signed in as Admin!");
-    } else if (email === "instructor@erus.com" && password === "instructor123") {
-      setUserRole("instructor");
-      toast.success("Signed in as Instructor!");
-    } else {
-      toast.error("Invalid credentials.");
-    }
-  };
+  // Removed handleLogin function as it is no longer required to authenticate
 
   const handleLogout = () => {
+    // Allows logging out, which will set userRole to null
     setUserRole(null);
     toast.success("Logged out successfully!");
   };
@@ -57,6 +49,7 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} />
 
       {userRole ? (
+        // Renders the main application if userRole is set (defaulted to "admin")
         <div className="md:pl-64 min-h-screen bg-gray-50">
           <Routes>
             <Route
@@ -96,7 +89,10 @@ function App() {
           </Routes>
         </div>
       ) : (
-        <LoginPanel handleLogin={handleLogin} />
+        // Placeholder text if the user logs out, since LoginPanel is no longer imported
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 text-xl font-semibold">
+          You have been logged out. Please refresh the page to sign in as Admin again.
+        </div>
       )}
     </>
   );
