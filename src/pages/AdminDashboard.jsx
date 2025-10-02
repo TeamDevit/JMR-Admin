@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import {
-  ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake
+    ListTree, ScrollText, Settings, ClipboardList, BrainCircuit, Handshake, BookOpen 
 } from 'lucide-react';
 
 // Import components from their new feature folders
@@ -25,167 +25,226 @@ import Avatars from "../pages/Avatars";
 import StudentPanel from "../pages/StudentPanel";
 
 const AdminDashboard = () => {
-  // State management for navigation and data
-  const [currentView, setCurrentView] = useState('login');
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedDay, setSelectedDay] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null);
-  const [showAddCourseForm, setShowAddCourseForm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-  // 🆕 NEW STATE FOR LOADING
-  const [loadingCourses, setLoadingCourses] = useState(true);
+    // State management for navigation and data
+    const [currentView, setCurrentView] = useState('dashboard');
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [selectedModule, setSelectedModule] = useState(null);
+    const [showAddCourseForm, setShowAddCourseForm] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [userRole, setUserRole] = useState('admin');
+    
+    // Core data states - Initialized as empty arrays, relying solely on APIs
+    const [loadingCourses, setLoadingCourses] = useState(true);
+    const [courses, setCourses] = useState([]);
+    const [instructors, setInstructors] = useState([]);
+    const [students, setStudents] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
+    const [transactions, setTransactions] = useState([]);
 
-  // 🆕 NEW STATE FOR REAL COURSES
-  const [courses, setCourses] = useState([]);
+    // Mock handleLogin/Logout (needed to prevent crashes)
+    const handleLogin = (role) => setUserRole(role);
+    const handleLogout = () => setUserRole(null);
+    
+    const handleAddCourse = async () => true;
 
 
-  // Mock data for instructors, students, and transactions (keeping these for now)
-  const [instructors, setInstructors] = useState([
-    { id: 'instr-1', name: 'Jane Doe', email: 'jane@erus.com', mobile: '9876543210', loginEnabled: true, role: 'admin', referralCode: 'JANE10', referredStudents: 10, commissionEarned: 5000  },
-    { id: 'instr-2', name: 'John Smith', email: 'john@erus.com', mobile: '9988776655', loginEnabled: true, role: 'instructor', referralCode: 'JOHN20', referredStudents: 25, commissionEarned: 12500  },
-  ]);
+    // ----------------------------------------------------------------------
+    // 1. Course Fetching Logic 
+    // ----------------------------------------------------------------------
+    useEffect(() => {
+        console.log("🔄 Fetching courses from API...",userRole);
+        if (userRole) { 
+            const fetchCourses = async () => {
+                setLoadingCourses(true);
+                try {
+                    const response = await api.get('/admincourses/get-course'); 
+                    
+                    let coursesArray = [];
+                    
+                    if (Array.isArray(response.data)) {
+                        const mappedCourses = response.data.map((course) => ({
+                            _id: course._id, 
+                            name: course.course_name, 
+                            code: course.slug || "No Code", 
+                            description: course.description,
+                        }));
+                        
+                        coursesArray = mappedCourses;
+                    } 
+                    console.log(`✅ Courses Loaded: ${coursesArray.length}`);
+                    
+                    setCourses(coursesArray);
 
-  const [students, setStudents] = useState([
-    { id: 'student-1', name: 'Alice Johnson', email: 'alice@student.com', courses: ['ELM-101'], progress: 75, grade: 92 },
-    { id: 'student-2', name: 'Bob Williams', email: 'bob@student.com', courses: ['CS-201'], progress: 50, grade: 85 },
-    { id: 'student-3', name: 'Charlie Brown', email: 'charlie@student.com', courses: ['ELM-101', 'DSF-301'], progress: 95, grade: 98 },
-  ]);
+                } catch (error) {
+                    console.error("Course Fetch FAILED:", error);
+                    toast.error("Could not load course data for admin panel.");
+                } finally {
+                    setLoadingCourses(false);
+                }
+            };
+            fetchCourses();
+        }
+    }, [userRole]); 
 
-  // ⚠️ Keep mock announcements for now
-  const [announcements, setAnnouncements] = useState([
-    { id: 'ann-1', title: 'Welcome to the new semester!', content: 'We are excited to have you all on board. Let the learning begin!', date: '2023-10-27' },
-    { id: 'ann-2', title: 'Maintenance Window', content: 'Our servers will be down for maintenance on 2023-11-05 from 2AM to 4AM.', date: '2023-10-25' },
-  ]);
 
-  // New mock data for transactions
-  const [transactions, setTransactions] = useState([
-    { id: 'txn-1', courseName: 'English Language Mastery', studentName: 'Alice Johnson', amount: 12999, date: '2023-10-26', status: 'Completed', method: 'Razorpay' },
-    { id: 'txn-2', courseName: 'Conversational Spanish', studentName: 'Bob Williams', amount: 9999, date: '2023-10-20', status: 'Completed', method: 'Razorpay' },
-    { id: 'txn-3', courseName: 'Data Science Fundamentals', studentName: 'Charlie Brown', amount: 19999, date: '2023-10-15', status: 'Failed', method: 'Stripe' },
-  ]);
-  
-  // ----------------------------------------------------------------------
-  // 🔑 STEP 1: Implement Course Fetching (with Debugging Log)
-  // ----------------------------------------------------------------------
-  useEffect(() => {
-    if (userRole) { // Only fetch if logged in
-      const fetchCourses = async () => {
-        try {
-          const response = await api.get('/get-course'); 
-          
-          // 🚨 DEBUG: Log the full response data here
-          console.log("API Response for /get-course:", response.data);
+    // ----------------------------------------------------------------------
+    // 2. Announcement Fetching Function (With Debug)
+    // ----------------------------------------------------------------------
+    const fetchAnnouncements = async () => {
+        console.log("🔄 Fetching announcements from API...");
+        try {
+            const response = await api.get('/promotion/notifications/all'); 
+            
+            // LOG: Check the raw response
+            console.log("📦 Raw Announcement API Response:", response.data);
+            
+            if (Array.isArray(response.data)) {
+                const mappedAnnouncements = response.data.map(announcement => ({
+                    id: announcement._id,
+                    title: announcement.title,
+                    content: announcement.message, 
+                    courseId: announcement.courseId || 'all',
+                    date: announcement.createdAt ? new Date(announcement.createdAt).toLocaleDateString() : 'N/A'
+                }));
 
-          // Check if the response contains the new 'data' array structure
-          if (response.data.success && Array.isArray(response.data.data)) {
-            setCourses(response.data.data);
-          } else {
-            // Fallback if backend hasn't been updated to return {data: []} but just returns the array
-                const coursesArray = Array.isArray(response.data) ? response.data : response.data.courses;
-            setCourses(Array.isArray(coursesArray) ? coursesArray : []); 
-            if (Array.isArray(coursesArray)) {
-                // If it's an array, it might be the old format, no error needed.
+                setAnnouncements(mappedAnnouncements);
+                // LOG: Confirm data count
+                console.log(`✅ Announcements Loaded: ${mappedAnnouncements.length}`);
             } else {
-                toast.error("Course data format unexpected.");
+                 console.warn("⚠️ Announcement API did not return an array:", response.data);
             }
-          }
-        } catch (error) {
-          console.error("Failed to fetch courses:", error);
-          // 🚨 DEBUG: Log the error response
-          console.error("Course Fetch Error Response:", error.response?.data);
-          toast.error("Could not load course data for admin panel.");
-        } finally {
-          setLoadingCourses(false);
-        }
-      };
-      fetchCourses();
-    }
-  }, [userRole]); // Rerun when user logs in
+        } catch (error) {
+            console.error("Announcement Fetch FAILED:", error.response?.data || error.message);
+            setAnnouncements([]);
+        }
+    };
 
-// ... (other handlers: handleAddInstructor, handleUpdateInstructor, handleDeleteInstructor, etc. - no changes)
+    // ----------------------------------------------------------------------
+    // 3. EFFECT: Call fetchAnnouncements on load 
+    // ----------------------------------------------------------------------
+    useEffect(() => {
+        if (userRole) {
+            fetchAnnouncements();
+        }
+    }, [userRole]);
 
-  // ----------------------------------------------------------------------
-  // 🔑 STEP 2: Update Announcement Handler to use the API (No change here, 
-  // as this was already correct to return true/false)
-  // ----------------------------------------------------------------------
-  const handleAddAnnouncement = async ({ title, content, courseCode }) => {
-    const loadingToast = toast.loading(`Sending announcement to ${courseCode === 'all' ? 'all courses' : courseCode}...`);
+    // ----------------------------------------------------------------------
+    // 4. Announcement Handler 
+    // ----------------------------------------------------------------------
+    const handleAddAnnouncement = async ({ title, content, courseId }) => {
+        const loadingToast = toast.loading(`Sending announcement...`);
 
-    try {
-      // CRITICAL: Call the new backend notification endpoint
-      const response = await api.post('/notifications/create', { 
-        title,
-        message: content, // Frontend's 'content' maps to backend's 'message'
-        courseCode // Can be 'all' or a specific course code/slug
-      });
-      
-      // Update mock state immediately (for visual feedback on the announcements list)
-      const newId = `ann-${Date.now()}`;
-      setAnnouncements(prev => [{ 
-        id: newId, 
-        title, 
-        content, 
-        date: new Date().toISOString().split('T')[0],
-        courseCode 
-      }, ...prev]); 
+        try {
+            const response = await api.post('/promotion/notifications/create', { 
+                title,
+                message: content, 
+                courseId 
+            });
+            
+            await fetchAnnouncements(); 
 
-      toast.success(response.data.message || "Announcement created successfully!", { id: loadingToast });
-      return true; // Indicate success for form reset
+            toast.success(response.data.message || "Announcement created successfully!", { id: loadingToast });
+            return true; 
 
-    } catch (error) {
-      console.error("Announcement failed:", error);
-      const errorMessage = error.response?.data?.message || 'Failed to send announcement.';
-      toast.error(errorMessage, { id: loadingToast });
-      return false; // Indicate failure
-    }
-  };
+        } catch (error) {
+            console.error("Announcement POST failed:", error.response?.data || error.message);
+            const errorMessage = error.response?.data?.message || 'Failed to send announcement.';
+            toast.error(errorMessage, { id: loadingToast });
+            return false; 
+        }
+    };
+    
+    // View rendering logic (WITH FIX)
+    const renderContent = () => {
+        const viewsNeedingCourses = ['courses', 'announcements', 'enrollment', 'modules', 'module-form'];
+        
+        // CHECK: If the view needs courses AND (it's still loading OR it finished loading with no data)
+        if (viewsNeedingCourses.includes(currentView)) {
+            // Check 1: Show loading state if course fetch is ongoing
+            if (loadingCourses) {
+                return <div className="flex-1 p-8 text-center text-gray-500">Loading courses...</div>;
+            } 
+            
+            // Check 2: If we are done loading (loadingCourses=false) AND the array is empty, 
+            // show the 'no data' message for all dependent views.
+            if (courses.length === 0) {
+                 return <div className="flex-1 p-8 text-center text-gray-500">Course data is unavailable. Cannot fully render views like Announcements and Enrollment.</div>;
+            }
+        }
+        
+        switch (currentView) {
+            case 'dashboard':
+                return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+            case 'courses':
+                return <CoursesView 
+                            courses={courses} 
+                            handleAddCourse={handleAddCourse} 
+                            setSelectedCourse={setSelectedCourse} 
+                            setCurrentView={setCurrentView} 
+                            userRole={userRole} 
+                        />;
+            case 'announcements':
+                // Courses are guaranteed to be loaded here if we passed the checks above!
+                return (
+                    <AnnouncementsView
+                        announcements={announcements}
+                        handleAddAnnouncement={handleAddAnnouncement}
+                        userRole={userRole}
+                        courses={courses} 
+                    />
+                );
+            case 'instructors':
+                return <InstructorsPanel 
+                            instructors={instructors} 
+                            handleAddInstructor={() => {}} 
+                            handleUpdateInstructor={() => {}} 
+                            handleDeleteInstructor={() => {}} 
+                        />;
+            case 'students':
+                return <StudentsPanel students={students} />;
+            case 'enrollment':
+                return <StudentEnrollmentForm courses={courses} instructors={instructors} />;
+            case 'transactions':
+                return <TransactionsView transactions={transactions} />;
+            case 'referrals':
+                return <ReferralsView instructors={instructors} />;
+            case 'modules':
+                return <ModulesView courses={courses} setCurrentView={setCurrentView} setSelectedModule={setSelectedModule} />;
+            case 'module-form':
+                return <ModuleFormView selectedModule={selectedModule} courses={courses} setCurrentView={setCurrentView} />;
+            case 'course-dashboard':
+                return <CourseDashboard course={selectedCourse} setCurrentView={setCurrentView} setSelectedDay={setSelectedDay} />;
+            case 'day-view':
+                return <DaysView day={selectedDay} setCurrentView={setCurrentView} />;
+            case 'avatars':
+                return <Avatars />;
+            case 'student-panel':
+                return <StudentPanel />;
+            case 'settings':
+                return <div className="p-8">Settings View</div>;
+            default:
+                return <div className="p-8">Welcome to the Admin Panel. Select a view from the sidebar.</div>;
+        }
+    };
 
-// ... (rest of the component logic - no changes)
+    // Main render logic
+    if (!userRole) {
+        return <LoginPanel handleLogin={handleLogin} />;
+    }
 
-  // View rendering logic
-  const renderContent = () => {
-    // ⚠️ Add loading check for courses
-    if (loadingCourses && currentView !== 'login') {
-      return <div className="flex-1 p-8 text-center text-gray-500">Loading courses...</div>;
-    }
-    
-    switch (currentView) {
-      case 'dashboard':
-        return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
-      // ... (other cases)
-      case 'announcements':
-        return (
-          <AnnouncementsView
-            announcements={announcements}
-            handleAddAnnouncement={handleAddAnnouncement}
-            userRole={userRole}
-            // 🔑 STEP 3: PASS FETCHED COURSES TO AnnouncementsView
-            courses={courses} 
-          />
-        );
-      // ... (rest of the cases)
-      default:
-        return null;
-    }
-  };
-
-  // Main render logic
-  if (!userRole) {
-    return <LoginPanel handleLogin={handleLogin} />;
-  }
-
-  return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      <Sidebar
-        userRole={userRole}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        handleLogout={handleLogout}
-      />
-      {renderContent()}
-    </div>
-  );
+    return (
+        <div className="flex min-h-screen bg-gray-50 font-sans">
+            <Toaster position="top-right" reverseOrder={false} />
+            <Sidebar
+                userRole={userRole}
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                handleLogout={handleLogout}
+            />
+            {renderContent()}
+        </div>
+    );
 };
 export default AdminDashboard;
