@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PlusCircle, Loader2, Play, Square, UserCheck } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
@@ -12,9 +12,9 @@ const Avatars = () => {
     const [isDefault, setIsDefault] = useState(false);
 
     // Default script text for preview
-    const defaultScriptText = "Hi this is Erus Academy";
+    const defaultScriptText = "Hi this is sample video";
 
-    // Saved characters (local only for now)
+    // Saved characters
     const [characters, setCharacters] = useState([]);
 
     // State for loading/submission status
@@ -26,6 +26,33 @@ const Avatars = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [previewUrl, setPreviewUrl] = useState("");
     const videoRef = useRef(null);
+
+    // Function to fetch all characters from the backend
+  // Function to fetch all characters from the backend
+const fetchCharacters = async () => {
+    try {
+        const res = await api.get("/characters/get-characters");
+
+        // ✅ Check if the characters property exists and is an array
+       if (Array.isArray(res.data)) {
+    setCharacters(res.data);
+} else {
+            // If the data is not an array, default to an empty array
+            setCharacters([]);
+            console.warn("API response did not contain a valid characters array:", res.data);
+        }
+
+    } catch (error) {
+        console.error("Error fetching characters:", error);
+        toast.error("Failed to fetch saved characters.");
+        setCharacters([]); // Set to empty array on error to prevent crashes
+    }
+};
+
+    // Fetch characters on component mount
+    useEffect(() => {
+        fetchCharacters();
+    }, []);
 
     const handleUseCharacter = (char) => {
         setCharacterName(char.name);
@@ -62,9 +89,12 @@ const Avatars = () => {
                 is_default: isDefault,
             };
 
-            // 🔹 Instead of calling backend, just save locally for now
-            setCharacters((prev) => [...prev, newCharacter]);
-            toast.success("Character saved locally! ✨");
+            // ✅ Make POST request to the backend
+            await api.post("/characters/create-character", newCharacter);
+            toast.success("Character saved! ✨");
+
+            // ✅ Fetch the updated list of characters after saving
+            await fetchCharacters();
 
             // Reset form
             setCharacterName("");
@@ -75,7 +105,8 @@ const Avatars = () => {
             setPreviewUrl("");
         } catch (error) {
             console.error("Error saving character:", error);
-            toast.error("An unexpected error occurred.");
+            const errorMessage = error.response?.data?.error || "An unexpected error occurred.";
+            toast.error(errorMessage);
         } finally {
             setIsSaving(false);
         }
@@ -92,41 +123,30 @@ const Avatars = () => {
         setPreviewUrl("");
         setIsPlaying(false);
 
+        const requestBody = {
+            avatar_id: avatarId,
+            voice_id: voiceId,
+            script: defaultScriptText,
+        };
+
         try {
-            // Step 1: Request video generation from your backend
-            // 💡 Changed endpoint to match the backend route and request body
-            const generateRes = await api.post("/video/generate", {
-                text1: defaultScriptText,
-                text2: "",
-                text3: "",
-                text4: "",
+            const generateRes = await api.post("/heygen/generate", requestBody, {
+                timeout: 300000,
             });
+            
+            console.log("Response from backend:", generateRes.data);
 
-            const { videoId } = generateRes.data;
-            if (!videoId) throw new Error("Failed to get video ID from server");
+            const videoUrl = generateRes.data.videoUrl || generateRes.data.data?.video_url;
 
-            // Step 2: Poll your backend for video status
-            const pollStatus = async () => {
-                const statusRes = await api.get(`/video-status/${videoId}`);
-                const status = statusRes.data?.status;
-                const videoUrl = statusRes.data?.video_url;
+            if (videoUrl) {
+                setPreviewUrl(videoUrl);
+                setIsPreviewing(false);
+                setHasPreviewed(true);
+                toast.success("Video ready! Click play to view.");
+            } else {
+                throw new Error("Video URL not found in the response.");
+            }
 
-                if (status === "completed" && videoUrl) {
-                    setPreviewUrl(videoUrl);
-                    setIsPreviewing(false);
-                    setHasPreviewed(true);
-                    toast.success("Video ready! Click play to view.");
-                    return;
-                }
-                if (status === "failed") {
-                    throw new Error(statusRes.data.error?.message || "Video rendering failed.");
-                }
-
-                // Poll again after 5 seconds
-                setTimeout(pollStatus, 5000);
-            };
-
-            pollStatus();
         } catch (error) {
             console.error("Error during video generation:", error);
             setIsPreviewing(false);
@@ -240,10 +260,10 @@ const Avatars = () => {
                                 {isSaving
                                     ? "Saving..."
                                     : isPreviewing
-                                        ? "Loading Preview..."
-                                        : hasPreviewed
-                                            ? "Save Character"
-                                            : "Preview Avatar"}
+                                    ? "Loading Preview..."
+                                    : hasPreviewed
+                                    ? "Save Character"
+                                    : "Preview Avatar"}
                             </motion.button>
                         </form>
                     </div>
@@ -277,24 +297,27 @@ const Avatars = () => {
                                             onEnded={handleVideoEnd}
                                             onPlay={handleVideoPlay}
                                             onPause={handleVideoPause}
-                                            controls
                                             autoPlay
-                                            muted
                                         />
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 opacity-0 hover:opacity-100 transition-opacity">
-                                            <motion.button
-                                                onClick={handleVideoPlayPause}
-                                                className="bg-white rounded-full p-4"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.9 }}
-                                            >
-                                                {isPlaying ? (
-                                                    <Square className="h-8 w-8 text-gray-800" />
-                                                ) : (
-                                                    <Play className="h-8 w-8 text-gray-800" />
-                                                )}
-                                            </motion.button>
-                                        </div>
+                                        <AnimatePresence>
+                                            {!isPlaying && (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 transition-opacity"
+                                                >
+                                                    <motion.button
+                                                        onClick={handleVideoPlayPause}
+                                                        className="bg-white rounded-full p-4"
+                                                        whileHover={{ scale: 1.1 }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                    >
+                                                        <Play className="h-8 w-8 text-gray-800" />
+                                                    </motion.button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -310,30 +333,37 @@ const Avatars = () => {
                 {/* Saved Characters Section */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold mb-6">Saved Characters</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {characters.map((char, index) => (
-                            <div
-                                key={index}
-                                className="border rounded-lg p-6 shadow hover:shadow-lg transition"
-                            >
-                                <h3 className="font-bold text-lg mb-2">{char.name}</h3>
-                                <p className="text-sm text-gray-600">Avatar: {char.avatar_id}</p>
-                                <p className="text-sm text-gray-600">Voice: {char.voice_id}</p>
-                                {char.is_default && (
-                                    <span className="inline-block mt-2 text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
-                                        Default
-                                    </span>
-                                )}
-                                <button
-                                    onClick={() => handleUseCharacter(char)}
-                                    className="mt-4 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                    {characters.length === 0 ? (
+                        <div className="text-center text-gray-500 py-10">
+                            <p className="text-lg">No characters saved yet.</p>
+                            <p className="text-sm mt-2">Create one using the form above!</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {characters.map((char, index) => (
+                                <div
+                                    key={index}
+                                    className="border rounded-lg p-6 shadow hover:shadow-lg transition"
                                 >
-                                    <UserCheck className="h-5 w-5 mr-2" />
-                                    Use Character
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                                    <h3 className="font-bold text-lg mb-2">{char.name}</h3>
+                                    <p className="text-sm text-gray-600">Avatar: {char.avatar_id}</p>
+                                    <p className="text-sm text-gray-600">Voice: {char.voice_id}</p>
+                                    {char.is_default && (
+                                        <span className="inline-block mt-2 text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
+                                            Default
+                                        </span>
+                                    )}
+                                    <button
+                                        onClick={() => handleUseCharacter(char)}
+                                        className="mt-4 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                                    >
+                                        <UserCheck className="h-5 w-5 mr-2" />
+                                        Use Character
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
