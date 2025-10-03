@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight, Search, Plus, Loader2 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import api from "../../utils/api"; // Ensure this is your Axios instance
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import api from "../../utils/api";
 
 const DaysView = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedCourse = location.state?.course; // Get the course data from navigation state
+  const { courseSlug } = useParams();
+  const selectedCourse = location.state?.course;
 
-  // --- State for fetched data and loading status ---
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [daySearchTerm, setDaySearchTerm] = useState("");
 
   // Safety check for selectedCourse
@@ -33,21 +32,20 @@ const DaysView = () => {
   }
 
   // --- Fetch days from the backend ---
-const fetchDays = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    // This is the correct path that your backend recognizes
-    const response = await api.get(`/course-days/${selectedCourse.id}`);
-    setDays(response.data.days);
-  } catch (err) {
-    // ... (error handling)
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchDays = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get(`/course-days/${selectedCourse.id}`);
+      setDays(response.data.days);
+    } catch (err) {
+      console.error("Failed to fetch days:", err);
+      setError(err.response?.data?.message || "Failed to fetch days.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Run the fetch call when the component mounts or the course ID changes
   useEffect(() => {
     if (selectedCourse?.id) {
       fetchDays();
@@ -55,20 +53,25 @@ const fetchDays = async () => {
   }, [selectedCourse?.id]);
 
   const filteredDays = days.filter(day =>
-    day.day_number.toString().includes(daySearchTerm) // Filter by day number
+    day.day_number.toString().includes(daySearchTerm)
   );
 
   const handleDayClick = (day) => {
-    // Navigate to the modules page, passing the day ID and course data in state
-    navigate(`/courses/${selectedCourse.id}/days/${day._id}`, { state: { selectedCourse, selectedDay: day } });
+    // MODIFICATION: Use day.day_number for the URL, but pass the full day object in state
+    navigate(`/courses/${courseSlug}/days/${day.day_number}`, { state: { selectedCourse, selectedDay: day } });
   };
 
-  const handleAddDay = () => {
-    // This function will now require a backend call to create a new day
-    // For now, you can navigate to a form or modal to handle day creation
-    // The previous implementation was just adding to the local state
-    // You'll need a new API call: api.post('/days', { course_id: selectedCourse.id, day_number: days.length + 1 })
-    console.log("Add new day logic here, including API call.");
+  const handleAddDay = async () => {
+    try {
+      const newDayNumber = days.length + 1;
+      await api.post("/course-days", {
+        course_id: selectedCourse.id,
+        day_number: newDayNumber,
+      });
+      fetchDays();
+    } catch (err) {
+      console.error("Failed to add new day:", err);
+    }
   };
 
   // --- Loading / Error UI ---
@@ -93,25 +96,23 @@ const fetchDays = async () => {
   // --- Render ---
   return (
     <div className="flex-1 p-8 bg-gray-50 min-h-screen">
-      {/* ... (rest of your JSX) ... */}
+      <div className="w-full max-w-7xl mx-auto mb-6">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">{selectedCourse.name}</h1>
+        <p className="text-gray-600">Showing days for this course. Total days: <span className="font-semibold">{selectedCourse.durationDays}</span></p>
+      </div>
+
       <div className="w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {/* ➕ Add New Day / Module Card */}
-        <div
-          onClick={handleAddDay}
-          className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-indigo-400 rounded-lg bg-white hover:bg-indigo-50 cursor-pointer transition-all duration-300"
-        >
-          <Plus size={32} className="text-indigo-600 mb-2" />
-          <span className="text-indigo-600 font-semibold">Add Day</span>
-        </div>
+        {/* ➕ Add New Day Card */}
+     
 
         {filteredDays.length > 0 ? (
           filteredDays.map((day, index) => {
-            const dayData = day; // Use real data from the fetched 'day' object
-            const totalModules = dayData.modules?.length || 0; // assuming 'modules' is populated
-            const enabledModules = totalModules; // You'll need a way to determine enabled status
+            const dayData = day;
+            const totalModules = dayData.modules?.length || 0;
+            const enabledModules = totalModules;
 
             const isLive = dayData.is_published;
-            const progressPercentage = (enabledModules / totalModules) * 100;
+            const progressPercentage = totalModules > 0 ? (enabledModules / totalModules) * 100 : 0;
 
             return (
               <div

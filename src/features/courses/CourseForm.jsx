@@ -8,7 +8,8 @@ const CourseForm = ({
   courseData = {},
   onSave,
   onClose,
-  isEditing
+  isEditing,
+  allUsers = [] // ✅ RECEIVING allUsers prop
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -20,19 +21,20 @@ const CourseForm = ({
     durationDays: '',
     learningObjectives: '',
     courseIncludes: '',
+    instructorId: '', // ✅ New field for selected instructor ID
     ...courseData,
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(courseData.image);
   const navigate = useNavigate();
 
-  // ✅ Fix: Merge courseData instead of replacing
-useEffect(() => {
-  if (courseData && Object.keys(courseData).length > 0) {
-    setFormData(prev => ({ ...prev, ...courseData }));
-    setImagePreview(courseData.image || null);
-  }
-}, [courseData]);
+  // Fix: Merge courseData instead of replacing
+  useEffect(() => {
+    if (courseData && Object.keys(courseData).length > 0) {
+      setFormData(prev => ({ ...prev, ...courseData }));
+      setImagePreview(courseData.image || null);
+    }
+  }, [courseData]);
 
 
   const handleChange = (e) => {
@@ -58,21 +60,27 @@ useEffect(() => {
     }
   };
 
-  // ✅ Fix: Close button should navigate
   const handleCancel = () => {
     navigate(-1);
-    
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.code || !formData.price || !formData.durationDays) {
-      toast.error('Please fill all required fields.');
+    // ✅ Updated validation to include instructorId
+    if (!formData.name || !formData.code || !formData.price || !formData.durationDays || !formData.instructorId) {
+      toast.error('Please fill all required fields, including the Instructor.');
       return;
     }
-    onSave({ ...formData, image: imagePreview });
+    onSave({ ...formData, image: imagePreview }); 
     navigate('/courses');
   };
+  // ✅ NEW: LOGGING RECEIVED USERS ARRAY FOR DEBUGGING
+  useEffect(() => {
+    console.log("[CourseForm] allUsers prop received:", allUsers);
+    if (allUsers.length > 0) {
+        console.log("[CourseForm] First user name:", allUsers[0].name);
+    }
+  }, [allUsers]);
 
   const renderPrice = () => {
     const price = parseFloat(formData.price) || 0;
@@ -88,6 +96,10 @@ useEffect(() => {
     }
     return <span className="text-2xl font-bold text-gray-900">₹{price.toLocaleString('en-IN')}</span>;
   };
+  
+  // Find the selected instructor's name for preview
+  const selectedInstructor = allUsers.find(user => user._id === formData.instructorId)?.name || 'Select Instructor';
+
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 p-4">
@@ -108,6 +120,7 @@ useEffect(() => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Course Name */}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">Course Name</label>
                 <input
@@ -120,6 +133,7 @@ useEffect(() => {
                   required
                 />
               </div>
+              {/* Course Code */}
               <div>
                 <label htmlFor="code" className="block text-sm font-medium text-gray-700">Course Code</label>
                 <input
@@ -132,6 +146,7 @@ useEffect(() => {
                   required
                 />
               </div>
+              {/* Original Price */}
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">Original Price (INR)</label>
                 <input
@@ -145,6 +160,7 @@ useEffect(() => {
                   required
                 />
               </div>
+              {/* Final Price after discount */}
               <div>
                 <label htmlFor="discount" className="block text-sm font-medium text-gray-700">Final Price after discount (INR)</label>
                 <input
@@ -161,6 +177,7 @@ useEffect(() => {
                   {formData.discount ? convertNumberToWords(formData.discount) : "Enter a final price"}
                 </p>
               </div>
+              {/* Duration (in days) */}
               <div>
                 <label htmlFor="durationDays" className="block text-sm font-medium text-gray-700">Duration (in days)</label>
                 <input
@@ -174,6 +191,28 @@ useEffect(() => {
                   required
                 />
               </div>
+              
+              {/* ✅ INSTRUCTOR DROPDOWN */}
+              <div>
+                <label htmlFor="instructorId" className="block text-sm font-medium text-gray-700">Instructor Name</label>
+                <select
+                  id="instructorId"
+                  name="instructorId"
+                  value={formData.instructorId || ''}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+                  required
+                >
+                  <option value="" disabled>Select a user as Instructor</option>
+                  {/* Mapping users to options */}
+                  {allUsers.map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Course Image */}
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-gray-700">Course Image</label>
                 <input
@@ -190,6 +229,7 @@ useEffect(() => {
               </div>
             </div>
             
+            {/* Description, Objectives, Includes fields... (unchanged) */}
             <div className="flex flex-col mt-4">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea
@@ -247,7 +287,7 @@ useEffect(() => {
           </form>
         </div>
 
-        {/* Right Column: Preview */}
+        {/* Right Column: Preview (Instructor added here for visualization) */}
         <div className="hidden md:flex flex-1 flex-col p-8 bg-gray-50 border-l border-gray-200">
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Course Card Preview</h3>
           <div className="flex-1 flex items-center justify-center">
@@ -264,6 +304,8 @@ useEffect(() => {
                   <div>
                     <h4 className="font-semibold text-lg text-gray-900">{formData.name || 'Course Name'}</h4>
                     <p className="text-xs text-gray-400">Code: {formData.code || 'CODE'}</p>
+                    {/* Display Instructor Name */}
+                    <p className="text-sm text-indigo-600 font-medium mt-1">Instructor: {selectedInstructor}</p> 
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">{formData.description || 'A brief description of the course.'}</p>

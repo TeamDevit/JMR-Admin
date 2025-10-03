@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Download, Upload, FileCheck2 } from 'lucide-react';
+import { Download, Upload, FileCheck2, Loader2 } from 'lucide-react';
 import toast, { Toaster } from "react-hot-toast";
+import api from "../../utils/api"; // Ensure this is the correct path to your API utility
 
 // =========================================================
 // 1. HELPER FUNCTION: Course Name/Code (Extracted from AnnouncementsView)
@@ -55,6 +56,9 @@ const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
 
     const handleUpload = async () => {
         if (!file || !selectedCourse) {
@@ -96,6 +100,19 @@ const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
 "John Doe","john@example.com",9876543210,john123
 "Jane Smith","jane@example.com",1234567890,jane123`;
 
+        const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "student_enrollment_template.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            toast.success("Enrollment template downloaded!");
+        }
+    };
         const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         if (link.download !== undefined) {

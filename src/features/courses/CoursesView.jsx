@@ -8,51 +8,51 @@ import api from "../../utils/api";
 const CoursesView = ({ userRole }) => {
   const navigate = useNavigate();
 
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [courseSearchTerm, setCourseSearchTerm] = useState("");
   const [showAddCourseForm, setShowAddCourseForm] = useState(false);
   const [courseFormData, setCourseFormData] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // --- Fetch courses from backend ---
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get("/admincourses/get-course");
-      if (Array.isArray(response.data)) {
-        const mappedCourses = response.data.map((course) => ({
-          id: course._id,
-          name: course.course_name,
-          code: course.slug || "",
-          slug: course.slug, // Ensure slug is available for navigation
-          description: course.description,
-          durationDays: course.no_of_days,
-          price: course.mrp,
-          discount: course.final_price,
-          studentsEnrolled: course.enrollments,
-          thumbnail: course.thumbnail_url,
-          promoVideo: course.promo_video_url,
-          isPublished: course.is_published,
-          level: course.level,
-          ratings: course.ratings,
-        }));
-        setCourses(mappedCourses);
-      } else {
-        setCourses([]);
-        console.error("Unexpected response:", response.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
-      setError("Failed to fetch courses. Check your backend and network.");
-      toast.error("Failed to fetch courses.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // --- Fetch courses from backend ---
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get("/admincourses/get-course");
+      if (Array.isArray(response.data)) {
+        const mappedCourses = response.data.map((course) => ({
+          id: course._id,
+          name: course.course_name,
+          code: course.slug || "",
+          slug: course.slug, // Ensure slug is available for navigation
+          description: course.description,
+          durationDays: course.no_of_days,
+          price: course.mrp,
+          discount: course.final_price,
+          studentsEnrolled: course.enrollments,
+          thumbnail: course.thumbnail_url,
+          promoVideo: course.promo_video_url,
+          isPublished: course.is_published,
+          level: course.level,
+          ratings: course.ratings,
+        }));
+        setCourses(mappedCourses);
+      } else {
+        setCourses([]);
+        console.error("Unexpected response:", response.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch courses:", err);
+      setError("Failed to fetch courses. Check your backend and network.");
+      toast.error("Failed to fetch courses.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCourses();
@@ -118,10 +118,9 @@ const CoursesView = ({ userRole }) => {
       course.code?.toLowerCase().includes(courseSearchTerm.toLowerCase())
   );
 
-  const handleCourseClick = (course) => {
-    // 🛑 ERROR FIX: Changed /courses/${course.slug} to template literal
-    navigate(`/courses/${course.slug}`, { state: { course } });
-  };
+  const handleCourseClick = (course) => {
+    navigate(`/courses/${course.slug}`, { state: { course } });
+  };
 
   // --- Loading / Error UI ---
   if (loading) {
@@ -199,53 +198,52 @@ const CoursesView = ({ userRole }) => {
         />
       )}
 
-      {/* Courses List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
-            <div
-              key={course.id}
-              onClick={() => handleCourseClick(course)}
-              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:ring-2 hover:ring-indigo-500 transition cursor-pointer flex flex-col"
-            >
-              {course.thumbnail && (
-                <img
-                  src={course.thumbnail}
-                  // 🛑 ERROR FIX: Changed alt string to template literal
-                  alt={`${course.name} thumbnail`}
-                  className="w-full h-40 object-cover rounded-md mb-4 border border-gray-200"
-                />
-              )}
-              <div className="flex justify-between items-start flex-grow">
-                <div>
-                  <h3 className="text-xl font-semibold">{course.name}</h3>
-                  <p className="text-sm text-gray-500">Code: {course.code}</p>
-                </div>
-                {userRole === "admin" && (
-                  <div className="flex space-x-2 mt-1" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => handleEditCourse(course)}>
-                      <Pencil size={18} className="text-gray-500 hover:text-indigo-600" />
-                    </button>
-                    <button onClick={() => handleDuplicateCourse(course)}>
-                      <Copy size={18} className="text-gray-500 hover:text-indigo-600" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="text-gray-600 mt-2 flex-grow">{course.description}</p>
-              <div className="mt-4 flex justify-between text-sm pt-4 border-t border-gray-100">
-                <span className="font-bold">₹{course.discount || course.price}</span>
-                <span>{course.durationDays} days</span>
-                <span>{course.studentsEnrolled} students</span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 col-span-full">No courses found.</p>
-        )}
-      </div>
-    </div>
-  );
+      {/* Courses List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCourses.length > 0 ? (
+          filteredCourses.map((course) => (
+            <div
+              key={course.id}
+              onClick={() => handleCourseClick(course)}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:ring-2 hover:ring-indigo-500 transition cursor-pointer flex flex-col"
+            >
+              {course.thumbnail && (
+                <img
+                  src={course.thumbnail}
+                  alt={`${course.name} thumbnail`}
+                  className="w-full h-40 object-cover rounded-md mb-4 border border-gray-200"
+                />
+              )}
+              <div className="flex justify-between items-start flex-grow">
+                <div>
+                  <h3 className="text-xl font-semibold">{course.name}</h3>
+                  <p className="text-sm text-gray-500">Code: {course.code}</p>
+                </div>
+                {userRole === "admin" && (
+                  <div className="flex space-x-2 mt-1" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => handleEditCourse(course)}>
+                      <Pencil size={18} className="text-gray-500 hover:text-indigo-600" />
+                    </button>
+                    <button onClick={() => handleDuplicateCourse(course)}>
+                      <Copy size={18} className="text-gray-500 hover:text-indigo-600" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <p className="text-gray-600 mt-2 flex-grow">{course.description}</p>
+              <div className="mt-4 flex justify-between text-sm pt-4 border-t border-gray-100">
+                <span className="font-bold">₹{course.discount || course.price}</span>
+                <span>{course.durationDays} days</span>
+                <span>{course.studentsEnrolled} students</span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 col-span-full">No courses found.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default CoursesView;

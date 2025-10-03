@@ -17,21 +17,25 @@ const MODULE_CONFIG = {
 const ModulesView = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { courseId, dayId } = useParams();
+    // MODIFICATION: Get dayNumber from URL instead of dayId
+    const { courseSlug, dayNumber } = useParams();
     
     // Data passed from the previous view (DaysView)
     const selectedCourse = location.state?.selectedCourse;
-    const selectedDay = location.state?.selectedDay; // Now an object: { _id: dayId, day_number: N }
+    // The `selectedDay` object might be `undefined` if the user navigates directly to the URL
+    // So we'll have to fetch it if it's missing.
+    const selectedDay = location.state?.selectedDay; 
 
     // State for fetched data
     const [modules, setModules] = useState([]);
+    const [dayId, setDayId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     // --- Data Fetching ---
-    const fetchModules = async () => {
-        if (!courseId || !dayId) {
-            setError("Missing Course or Day ID in URL parameters.");
+    const fetchDayIdAndModules = async () => {
+        if (!selectedCourse || !dayNumber) {
+            setError("Missing course data or day number in URL.");
             setLoading(false);
             return;
         }
@@ -39,13 +43,24 @@ const ModulesView = () => {
         try {
             setLoading(true);
             setError(null);
+
+            let currentDayId;
+
+            // First, try to get the day ID from the state, if it exists
+            if (selectedDay?.day_number === parseInt(dayNumber)) {
+                currentDayId = selectedDay._id;
+                setDayId(currentDayId);
+            } else {
+                // If not in state (direct URL access), fetch the day ID from the backend
+                const dayResponse = await api.get(`/course-day-by-number/${selectedCourse.id}/${dayNumber}`);
+                currentDayId = dayResponse.data._id;
+                setDayId(currentDayId);
+            }
+
+            // Now, fetch the modules using the retrieved day ID
+            const modulesResponse = await api.get(`/modules/${selectedCourse.id}/${currentDayId}`);
             
-            // API call to the backend: /api/v1/modules/:courseId/:dayId
-            const response = await api.get(`/modules/${courseId}/${dayId}`);
-            
-            // Map fetched backend data to the required frontend structure
-            const mappedModules = response.data.map(backendModule => {
-                // 🎯 CRITICAL FIX: Use backendModule.type to match the MongoDB schema
+            const mappedModules = modulesResponse.data.map(backendModule => {
                 const config = MODULE_CONFIG[backendModule.type] || { 
                     title: "Unknown Module Type", 
                     icon: Settings, 
@@ -56,9 +71,7 @@ const ModulesView = () => {
                 return {
                     ...config,
                     _id: backendModule._id,
-                    // Assume the backend module object has an 'is_published' boolean field
                     status: backendModule.is_published ? "Active" : "Draft", 
-                    // Fallback to generic description if no specific 'description' field exists on the module
                     content: backendModule.description || config.content, 
                     backendData: backendModule, 
                 };
@@ -66,7 +79,7 @@ const ModulesView = () => {
             
             setModules(mappedModules);
         } catch (err) {
-            console.error("Failed to fetch modules:", err);
+            console.error("Failed to fetch day or modules:", err);
             if (err.response?.status === 404) {
                 setModules([]);
                 setError("No modules found for this day.");
@@ -79,8 +92,9 @@ const ModulesView = () => {
     };
 
     useEffect(() => {
-        fetchModules();
-    }, [courseId, dayId]);
+        // We now call a single function to handle both fetching the day ID (if needed) and the modules
+        fetchDayIdAndModules();
+    }, [selectedCourse, dayNumber]);
     
     // The handleModuleToggle function should eventually trigger an API PUT/PATCH call
     const handleModuleToggle = (moduleId, currentStatus) => {
@@ -90,7 +104,7 @@ const ModulesView = () => {
 
     const handleGoBack = () => {
         // Pass selectedCourse back to DaysView so it can refresh the day list if needed
-        navigate(`/courses/${courseId}`, { state: { course: selectedCourse } });
+        navigate(`/courses/${courseSlug}`, { state: { course: selectedCourse } });
     };
 
     // --- Loading / Error UI ---
@@ -102,9 +116,6 @@ const ModulesView = () => {
             </div>
         );
     }
-
-    // Determine the day name for display
-    const dayDisplay = selectedDay?.day_number ? `Day ${selectedDay.day_number}` : selectedDay || dayId;
     
     return (
         <div className="flex-1 p-8">
@@ -125,7 +136,7 @@ const ModulesView = () => {
                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">
                     Modules for: <span className="text-indigo-600">{selectedCourse?.name || 'Loading...'}</span>
                     <span className="text-gray-500 mx-2">/</span>
-                    <span className="text-indigo-600">{dayDisplay}</span>
+                    <span className="text-indigo-600">Day {dayNumber}</span>
                 </h2>
                 {error && modules.length === 0 && (
                     <div className="text-red-600 bg-red-50 border border-red-200 p-3 rounded-lg text-sm">{error}</div>
@@ -144,7 +155,6 @@ const ModulesView = () => {
                                 key={module._id}
                                 className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col justify-between shadow-sm
                                             hover:ring-2 hover:ring-indigo-500 transition-all duration-300 ease-in-out cursor-pointer"
-                                // Navigate to the specific module path, passing module data
                                 onClick={() => navigate(module.path, { state: { selectedCourse, selectedDay, selectedModule: module.backendData } })}
                             >
                                 <div className="flex items-start justify-between">
