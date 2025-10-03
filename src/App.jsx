@@ -16,7 +16,7 @@ import StudentsPanel from "./features/students/StudentsPanel";
 import StudentEnrollmentForm from "./features/students/StudentEnrollmentForm";
 import MainDashboard from "./features/dashboard/MainDashboard";
 import TransactionsView from "./features/transactions/TransactionsView";
-import AnnouncementsView from "./features/announcements/AnnouncementsView"; // ⬅️ KEEP
+import AnnouncementsView from "./features/announcements/AnnouncementsView";
 import ReferralsView from "./features/referrals/ReferralsView";
 import CourseForm from "./features/courses/CourseForm";
 import AccountPage from "./features/account/AccountPage";
@@ -38,16 +38,6 @@ function App() {
     const [courses, setCourses] = useState([]);
     const [loadingCourses, setLoadingCourses] = useState(false);
     
-    // ⬅️ REMOVED ANNOUNCEMENT STATE: [announcements, setAnnouncements]
-    // ⬅️ REMOVED ANNOUNCEMENT STATE: [loadingAnnouncements, setLoadingAnnouncements]
-
-    // ----------------------------------------------------
-    // REMOVED: fetchAnnouncements Logic
-    // ----------------------------------------------------
-    // ----------------------------------------------------
-    // REMOVED: handleAddAnnouncement Logic
-    // ----------------------------------------------------
-
     // ----------------------------------------------------
     // EXISTING: Fetch Courses Logic
     // ----------------------------------------------------
@@ -86,15 +76,19 @@ function App() {
         }
     }, [userRole]); 
 
-    // ----------------------------------------------------
-    // REMOVED: Combined useEffect for Announcements
-    // ----------------------------------------------------
-
     const handleLogout = () => {
         // Allows logging out, which will set userRole to null
         setUserRole(null);
         toast.success("Logged out successfully!");
     };
+    
+    // Mock handler for bulk enrollment (since the logic is not in App.js)
+    const handleBulkEnrollment = (studentData, courseId) => {
+        console.log(`Bulk Enrollment triggered for course ID: ${courseId}`, studentData);
+        // This function would typically trigger a background process or show a status update.
+        // The component (StudentEnrollmentForm) handles the immediate success/error feedback.
+    };
+
 
     return (
         <>
@@ -127,7 +121,7 @@ function App() {
                             <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
                             <Route path="students" element={<StudentsPanel userRole={userRole} />} />
                             
-                            {/* ⬅️ UPDATED: AnnouncementsView now only receives courses and userRole */}
+                            {/* AnnouncementsView now only receives courses and userRole */}
                             <Route 
                                 path="announcements" 
                                 element={
@@ -140,7 +134,17 @@ function App() {
 
                             <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
                             <Route path="transactions" element={<TransactionsView />} />
-                            <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
+                            
+                            {/* 🚀 CRITICAL UPDATE: Pass the courses prop to StudentEnrollmentForm */}
+                            <Route 
+                                path="bulk-enrollment" 
+                                element={
+                                    <StudentEnrollmentForm 
+                                        courses={courses} 
+                                        handleBulkEnrollment={handleBulkEnrollment} // Make sure to pass this handler if it's used
+                                    />
+                                } 
+                            />
                             <Route path="module-form" element={<ModuleFormView />} />
                             <Route path="account" element={<AccountPage />} />
                             <Route path="*" element={<div className="p-8">Page not found</div>} />
