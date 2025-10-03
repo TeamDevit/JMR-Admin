@@ -34,44 +34,27 @@ const API_USERS_URL = "http://localhost:3000/api/v1/users";
 
 function App() {
   const [userRole, setUserRole] = useState("admin");
-  const [users, setUsers] = useState([]); 
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Function to fetch the list of all users
   useEffect(() => {
     const fetchUsers = async () => {
-      console.log(`[Users Fetch] Attempting to fetch users from: ${API_USERS_URL}`); // 🟢 START
+      setIsLoading(true);
       try {
         const response = await fetch(API_USERS_URL);
-        
         if (!response.ok) {
-          // Log a network/server status error
-          console.error(`[Users Fetch] HTTP Error: ${response.status} ${response.statusText}`); // 🔴 ERROR
-          toast.error(`Failed to fetch users: Server responded with ${response.status}`);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
         const data = await response.json();
-        
-        // Log the complete response object structure
-        console.log("[Users Fetch] Raw API Data Received:", data); 
-
-        // IMPORTANT: Extract the 'users' array and check its content
-        const usersArray = data.users || []; 
+        const usersArray = data.users || [];
         setUsers(usersArray);
-        
-        if (usersArray.length === 0) {
-            console.warn("[Users Fetch] SUCCESS - Fetched 0 users."); // 🟠 WARNING
-            toast("User list loaded, but it is empty. Check your database.", {icon: '⚠️'});
-        } else {
-            console.log(`[Users Fetch] SUCCESS - Fetched ${usersArray.length} users. Example Name: ${usersArray[0].name}`); // 🟢 SUCCESS
-            toast.success("Users list loaded successfully!");
-        }
-
       } catch (error) {
-        // Log a catastrophic error (network down, JSON parse fail, etc.)
-        console.error("[Users Fetch] Catastrophic Error:", error.message); // 🔴 ERROR
-        toast.error("Could not connect to user API or parse data.");
+        console.error("[Users Fetch] Catastrophic Error:", error.message);
         setUsers([]);
+        toast.error("Could not connect to user API or parse data.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -85,9 +68,9 @@ function App() {
     toast.success("Logged out successfully!");
   };
 
-    return (
-        <>
-            <Toaster position="top-right" reverseOrder={false} />
+  return (
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
 
       {userRole ? (
         <div className="md:pl-64 min-h-screen bg-gray-50">
@@ -100,7 +83,7 @@ function App() {
               <Route path="avatars" element={<Avatars />} />
               <Route path="courses" element={<CoursesView userRole={userRole} />} />
               <Route path="courses/:courseSlug" element={<DaysView />} />
-              
+
               <Route path="courses/:courseSlug/days/:dayNumber" element={<ModulesView />} />
               <Route path="courses/:courseSlug/days/:dayNumber/vocabulary" element={<Vocabulary />} />
               <Route path="courses/:courseSlug/days/:dayNumber/sentence" element={<Sentence />} />
@@ -109,9 +92,16 @@ function App() {
               <Route path="courses/:courseSlug/days/:dayNumber/studenttoavatar" element={<StudentToAvatar />} />
               <Route path="courses/:courseSlug/days/:dayNumber/quiz" element={<Quiz />} />
 
-              {/* Passing users to CourseForm */}
-              <Route path="courseform" element={<CourseForm allUsers={users} />} /> 
-              
+              {/* New routes for the separate CourseForm page */}
+              <Route
+                path="courseform"
+                element={<CourseForm allUsers={users} />}
+              />
+              <Route
+                path="courseform/edit/:courseId"
+                element={<CourseForm allUsers={users} />}
+              />
+
               {/* Other top-level routes */}
               <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
               <Route path="students" element={<StudentsPanel userRole={userRole} />} />

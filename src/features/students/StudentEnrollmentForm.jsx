@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { Download, Upload, FileCheck2, Loader2 } from 'lucide-react';
 import toast, { Toaster } from "react-hot-toast";
-import api from "../../utils/api"; // Ensure this is the correct path to your API utility
+import api from "../../utils/api";
 
 // =========================================================
-// 1. HELPER FUNCTION: Course Name/Code (Extracted from AnnouncementsView)
+// 1. HELPER FUNCTION: Course Name/Code
 // =========================================================
 const getCourseDisplay = (courseId, courses) => {
     if (!courseId) return 'Select a Course';
     
-    // Normalize ID for comparison (important for MongoDB ObjectIds)
     const normalizedCourseId = courseId.toString(); 
-    
     const course = Array.isArray(courses) 
         ? courses.find(c => c._id === normalizedCourseId) 
         : null; 
@@ -20,7 +18,7 @@ const getCourseDisplay = (courseId, courses) => {
 };
 
 // =========================================================
-// 2. DROPDOWN COMPONENT (Extracted and Reused Logic)
+// 2. DROPDOWN COMPONENT
 // =========================================================
 const CourseSelectDropdown = ({ courses, selectedCourse, setSelectedCourse, isDisabled = false }) => (
     <div className="flex items-center space-x-2 w-full">
@@ -45,17 +43,14 @@ const CourseSelectDropdown = ({ courses, selectedCourse, setSelectedCourse, isDi
 
 
 // =========================================================
-// 3. MAIN COMPONENT (Updated to use Prop)
+// 3. MAIN COMPONENT (Fixed and Cleaned)
 // =========================================================
 const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
-    // NOTE: The prop 'courses' is now used for the dropdown options.
     const [file, setFile] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState('');
     const [isUploading, setIsUploading] = useState(false);
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-    };
+    // ✅ Only ONE definition here
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
@@ -67,29 +62,19 @@ const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
         }
 
         setIsUploading(true);
-
-        // --- MOCK API/PROCESSING LOGIC ---
-        // In a real app, you'd send the file and selectedCourse ID to your backend API here.
-        // const formData = new FormData();
-        // formData.append('courseId', selectedCourse);
-        // formData.append('csvFile', file);
-        // await api.post('/enrollment/bulk-upload', formData); 
         
-        // Mock processing (Replace with actual API/File handling)
+        // Mock processing
         await new Promise(resolve => setTimeout(resolve, 1500)); 
         const mockStudentsData = [{ name: 'Test Student 1' }, { name: 'Test Student 2' }];
         
         try {
-            // After successful backend processing, call the parent handler
             handleBulkEnrollment(mockStudentsData, selectedCourse); 
             toast.success(`Enrollment for ${getCourseDisplay(selectedCourse, courses)} started!`);
             
-            // Clear state on successful upload
             setFile(null);
             setSelectedCourse('');
-
         } catch (error) {
-             toast.error(error.message || "Bulk enrollment failed on the server.");
+            toast.error(error.message || "Bulk enrollment failed on the server.");
         } finally {
             setIsUploading(false);
         }
@@ -100,19 +85,6 @@ const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
 "John Doe","john@example.com",9876543210,john123
 "Jane Smith","jane@example.com",1234567890,jane123`;
 
-        const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "student_enrollment_template.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            toast.success("Enrollment template downloaded!");
-        }
-    };
         const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         if (link.download !== undefined) {
@@ -148,7 +120,6 @@ const StudentEnrollmentForm = ({ courses = [], handleBulkEnrollment }) => {
                             <span>Download Template</span>
                         </button>
                         
-                        {/* REUSED DROPDOWN COMPONENT */}
                         <CourseSelectDropdown
                             courses={courses}
                             selectedCourse={selectedCourse}
