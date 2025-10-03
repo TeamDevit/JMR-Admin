@@ -80,43 +80,49 @@ const handleGenerate = async () => {
     }
     
     setIsGenerating(true);
-    // Use the toast.loading ID to later update or dismiss the message
-    const loadingToastId = toast.loading("Preparing files and starting generation..."); 
+    const loadingToastId = toast.loading("Uploading and processing vocabulary..."); 
     
     try {
-        // --- 1. Build FormData ---
         const formData = new FormData();
-        formData.append('avatarId', avatarId.trim());
         
-        // Append all files to the form data
-        bgImages.forEach(file => {
-            formData.append('bgImages', file);
+        // ✅ FIXED: Use correct field names that match backend
+        formData.append('avatar_id', avatarId.trim());
+        
+        // ✅ Only one image (backend expects single image)
+        if (bgImages.length > 0) {
+            formData.append('image', bgImages[0]); // Backend expects 'image', not 'bgImages'
+        }
+        
+        // ✅ Only one excel file (backend expects single excel)
+        if (dragDropFiles.length > 0) {
+            formData.append('excel', dragDropFiles[0]); // Backend expects 'excel', not 'vocabularyFiles'
+        }
+        
+        // Make direct API call (not using moduleService since that doesn't match your backend)
+        const response = await api.post('/modules/bulk-upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         });
-        dragDropFiles.forEach(file => {
-            formData.append('vocabularyFiles', file);
+        
+        toast.success(`✅ Vocabulary uploaded! ${response.data.count} items created.`, { 
+            id: loadingToastId 
         });
-        // -------------------------
-
-        // --- 2. Call the Generic Service Handler ---
-        const data = await handleModuleAction(
-            'create',          // action: 'create' (maps to create endpoint)
-            'vocabulary',      // moduleType: 'vocabulary' (maps to ENDPOINTS.vocabulary)
-            formData           // data: The FormData object
-        );
-        // -------------------------------------------
-
-        // The service already shows a toast.success, but let's confirm the job ID/status
-        toast.success(`Job started successfully! Job ID: ${data.jobId || data._id}`, { id: loadingToastId });
+        
+        // Clear form
+        setAvatarId('');
+        setBgImages([]);
+        setDragDropFiles([]);
         
     } catch (error) {
-        // The service already handles toast.error, but we dismiss the loading toast
-        console.error("Generation FAILED:", error);
-        toast.dismiss(loadingToastId); 
+        console.error("Upload FAILED:", error);
+        toast.error(error.response?.data?.error || "Failed to upload vocabulary", { 
+            id: loadingToastId 
+        });
     } finally {
         setIsGenerating(false);
     }
 };
-
     const handleDownloadTemplate = () => {
         const link = document.createElement("a");
         link.href = "/templates/vocabulary_template.xlsx";
