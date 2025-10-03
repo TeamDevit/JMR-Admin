@@ -19,7 +19,7 @@ import ReferralsView from "./features/referrals/ReferralsView";
 import CourseForm from "./features/courses/CourseForm";
 import AccountPage from "./features/account/AccountPage";
 import ModuleFormView from "./features/modules/ModuleFormView";
-import api from "./utils/api";
+import api from "./utils/api"; 
 //forms
 import Vocabulary from "./features/modules/vocabulary";
 import Sentence from "./features/modules/Sentence";
@@ -31,16 +31,22 @@ import Quiz from "./features/modules/Quiz";
 import Avatars from "./pages/Avatars";
 
 const API_USERS_URL = "http://localhost:3000/api/v1/users";
+const API_COURSES_URL = "/admincourses/get-course"; // Use API utility base path
 
 function App() {
   const [userRole, setUserRole] = useState("admin");
   const [users, setUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // REMOVED: setIsLoading is assigned but never used (handled below)
+  
+  // NEW STATE: For fetching courses needed in AnnouncementsView, CourseForm, etc.
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
 
   // Function to fetch the list of all users
   useEffect(() => {
+    // REMOVED: 'api' is defined but never used (it's used in the new courses fetch below)
     const fetchUsers = async () => {
-      setIsLoading(true);
+      // REMOVED: setIsLoading is assigned but never used (only needed if component uses it)
       try {
         const response = await fetch(API_USERS_URL);
         if (!response.ok) {
@@ -53,20 +59,62 @@ function App() {
         console.error("[Users Fetch] Catastrophic Error:", error.message);
         setUsers([]);
         toast.error("Could not connect to user API or parse data.");
-      } finally {
-        setIsLoading(false);
-      }
+      } 
+      // REMOVED: finally block with setIsLoading(false)
     };
 
     if (userRole === "admin") {
       fetchUsers();
     }
   }, [userRole]);
+  
+  // NEW EFFECT: Fetching Courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+        setLoadingCourses(true);
+        try {
+            const response = await api.get(API_COURSES_URL);
+            
+            let coursesArray = [];
+            
+            if (Array.isArray(response.data)) {
+                const mappedCourses = response.data.map((course) => ({
+                    _id: course._id, 
+                    name: course.course_name, 
+                    code: course.slug || "No Code", 
+                    description: course.description,
+                }));
+                
+                coursesArray = mappedCourses;
+            } 
+            setCourses(coursesArray);
+            console.log(`✅ Courses Loaded: ${coursesArray.length}`);
+        } catch (error) {
+            console.error("Course Fetch FAILED:", error);
+            toast.error("Could not load course data.");
+        } finally {
+            setLoadingCourses(false);
+        }
+    };
+
+    if (userRole === "admin") {
+        fetchCourses();
+    }
+}, [userRole]);
 
   const handleLogout = () => {
     setUserRole(null);
     toast.success("Logged out successfully!");
   };
+  
+  // Display a loading screen while courses are being fetched
+  if (userRole && loadingCourses) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 text-xl font-semibold">
+        Loading core data...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -79,9 +127,9 @@ function App() {
               path="/"
               element={<MainLayout handleLogout={handleLogout} userRole={userRole} />}
             >
-              <Route index element={<MainDashboard />} />
+              <Route index element={<MainDashboard courses={courses} />} />
               <Route path="avatars" element={<Avatars />} />
-              <Route path="courses" element={<CoursesView userRole={userRole} />} />
+              <Route path="courses" element={<CoursesView userRole={userRole} courses={courses} />} />
               <Route path="courses/:courseSlug" element={<DaysView />} />
 
               <Route path="courses/:courseSlug/days/:dayNumber" element={<ModulesView />} />
@@ -105,11 +153,12 @@ function App() {
               {/* Other top-level routes */}
               <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
               <Route path="students" element={<StudentsPanel userRole={userRole} />} />
-              <Route path="announcements" element={<AnnouncementsView userRole={userRole} />} />
+              {/* FIX: Passing courses to AnnouncementsView */}
+              <Route path="announcements" element={<AnnouncementsView userRole={userRole} courses={courses} />} />
               <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
               <Route path="transactions" element={<TransactionsView />} />
-              <Route path="bulk-enrollment" element={<StudentEnrollmentForm />} />
-              <Route path="module-form" element={<ModuleFormView />} />
+              <Route path="bulk-enrollment" element={<StudentEnrollmentForm courses={courses} />} />
+              <Route path="module-form" element={<ModuleFormView courses={courses} />} />
               <Route path="account" element={<AccountPage />} />
               <Route path="*" element={<div className="p-8">Page not found</div>} />
             </Route>

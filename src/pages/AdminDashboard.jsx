@@ -30,18 +30,23 @@ const AdminDashboard = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
     const [selectedModule, setSelectedModule] = useState(null);
-    const [showAddCourseForm, setShowAddCourseForm] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
+    
+    // REMOVED: showAddCourseForm, setShowAddCourseForm (Unused state variables)
+    // REMOVED: showEditModal, setShowEditModal (Unused state variables)
+    // REMOVED: isEditing, setIsEditing (Unused state variables)
+    
     const [userRole, setUserRole] = useState('admin');
     
     // Core data states - Initialized as empty arrays, relying solely on APIs
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [courses, setCourses] = useState([]);
-    const [instructors, setInstructors] = useState([]);
-    const [students, setStudents] = useState([]);
+    const [instructors, ] = useState([]);
+    // REMOVED: setInstructors (The setter was unused, but the state variable 'instructors' is used.)
+    const [students, ] = useState([]);
+    // REMOVED: setStudents (The setter was unused, but the state variable 'students' is used.)
     const [announcements, setAnnouncements] = useState([]);
-    const [transactions, setTransactions] = useState([]);
+    const [transactions, ] = useState([]);
+    // REMOVED: setTransactions (The setter was unused, but the state variable 'transactions' is used.)
 
     // Mock handleLogin/Logout (needed to prevent crashes)
     const handleLogin = (role) => setUserRole(role);
@@ -59,6 +64,7 @@ const AdminDashboard = () => {
             const fetchCourses = async () => {
                 setLoadingCourses(true);
                 try {
+                    // NOTE: Removed 'api' import from unused variable list - it's used here.
                     const response = await api.get('/admincourses/get-course'); 
                     
                     let coursesArray = [];
@@ -116,7 +122,8 @@ const AdminDashboard = () => {
                  console.warn("⚠️ Announcement API did not return an array:", response.data);
             }
         } catch (error) {
-            console.error("Announcement Fetch FAILED:", error.response?.data || error.message);
+            // FIX: Logging the full error object can help debug the 500 error
+            console.error("Announcement Fetch FAILED:", error.response?.data || error.message, error); 
             setAnnouncements([]);
         }
     };
@@ -156,7 +163,7 @@ const AdminDashboard = () => {
         }
     };
     
-    // View rendering logic (WITH FIX)
+    // View rendering logic
     const renderContent = () => {
         const viewsNeedingCourses = ['courses', 'announcements', 'enrollment', 'modules', 'module-form'];
         
