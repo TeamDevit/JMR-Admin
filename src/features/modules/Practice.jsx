@@ -1,207 +1,197 @@
-// src/features/modules/Practice.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import { ArrowLeft, Download, Upload, Trash2, CheckCircle } from 'lucide-react';
+import { useParams, useNavigate } from "react-router-dom";
+import toast, { Toaster } from 'react-hot-toast';
+import api from '../../utils/api';
 
-// Import your custom excel converter and generic module service
-import { excelFileToJSON } from '../../utils/excelConverter';
-import { handleModuleAction } from '../../services/moduleService'; 
-
-
-const Practice = () => {
+const Practice = ({ courses }) => {
+    const { courseSlug, dayNumber } = useParams();
     const navigate = useNavigate();
-    const location = useLocation(); // Used to get routing data
 
-    // Get day data from navigation state (necessary for linking module content)
-    const { selectedDay } = location.state || {};
-    const dayId = selectedDay?.day_id || '65123abc1234def567890123';
-
-    // State for the bulk upload section
+    const [characters, setCharacters] = useState([]);
+    const [selectedCharacter, setSelectedCharacter] = useState("");
     const [excelFile, setExcelFile] = useState(null);
-    const [excelData, setExcelData] = useState(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const fileInputRef = useRef(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [dayId, setDayId] = useState(null);
 
-    const handleBack = () => {
-        navigate(-1);
-    };
+    const excelFileRef = useRef(null);
+
+    useEffect(() => {
+        const fetchCharacters = async () => {
+            try {
+                const res = await api.get("/characters/get-characters");
+                if (Array.isArray(res.data)) {
+                    setCharacters(res.data);
+                    const defaultChar = res.data.find(c => c.is_default);
+                    if (defaultChar) setSelectedCharacter(defaultChar._id);
+                }
+            } catch (error) {
+                toast.error("Failed to load characters");
+            }
+        };
+        fetchCharacters();
+    }, []);
+
+    useEffect(() => {
+        const fetchDayId = async () => {
+            try {
+                const course = courses.find(c => c.code === courseSlug);
+                
+                if (!course) {
+                    toast.error("Course not found");
+                    return;
+                }
+
+                const daysRes = await api.get(`/days/course-days/${course._id}`);
+                
+                let daysArray = [];
+                if (Array.isArray(daysRes.data)) {
+                    daysArray = daysRes.data;
+                } else if (daysRes.data.days) {
+                    daysArray = daysRes.data.days;
+                } else if (daysRes.data.data) {
+                    daysArray = daysRes.data.data;
+                }
+                
+                const day = daysArray.find(d => d.day_number === parseInt(dayNumber));
+                
+                if (!day) {
+                    toast.error("Day not found");
+                    return;
+                }
+
+                setDayId(day._id);
+            } catch (error) {
+                console.error("Error fetching day:", error);
+                toast.error("Failed to load day information");
+            }
+        };
+
+        if (courses.length > 0 && courseSlug && dayNumber) {
+            fetchDayId();
+        }
+    }, [courses, courseSlug, dayNumber]);
 
     const handleDownloadTemplate = () => {
         const link = document.createElement("a");
-        link.href = "/templates/practice_sentences_template.xlsx";
+        link.href = "/templates/practice_sentences_template.xlsx"; 
         link.download = "practice_sentences_template.xlsx";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Template downloaded successfully!");
-    };
-
-    const processFileAndSetState = async (file) => {
-        if (!file || !file.name.endsWith('.xlsx')) {
-            toast.error('Only .xlsx files are supported.');
-            setExcelFile(null);
-            setExcelData(null);
-            return;
-        }
-        
-        setExcelFile(file);
-        try {
-            // Pass dayId to the converter so each JSON object includes it
-            const data = await excelFileToJSON(file, dayId);
-            setExcelData(data);
-            toast.success(`File processed successfully! ${data.length} records found.`);
-        } catch (error) {
-            toast.error(error.message);
-            setExcelFile(null);
-            setExcelData(null);
-        }
+        toast.success("Template downloaded!");
     };
     
-    const handleFileChange = (e) => {
-        processFileAndSetState(e.target.files[0]);
-    };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.currentTarget.contains(e.relatedTarget)) return;
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-            processFileAndSetState(files[0]);
+    const handleGenerate = async () => {
+        if (!selectedCharacter) {
+            toast.error("Please select a character");
+            return;
         }
-    };
-
-    const handleUploadSentences = async () => {
-        if (!excelData || excelData.length === 0) {
-            toast.error("Please select and process a valid Excel file first.");
+        if (!excelFile) {
+            toast.error("Please upload practice spreadsheet");
+            return;
+        }
+        if (!dayId) {
+            toast.error("Day information not loaded");
             return;
         }
 
-        setIsUploading(true);
+        setIsGenerating(true);
+        const loadingToastId = toast.loading("Uploading practice items...");
+
         try {
-            // Loop through each item and send it individually
-            for (const item of excelData) {
-                // Use 'create' action and 'practice-sentence' module key
-                await handleModuleAction('create', 'practice-sentence', item);
-            }
-            toast.success(`Successfully uploaded ${excelData.length} practice sentences!`);
+            const formData = new FormData();
+            const character = characters.find(c => c._id === selectedCharacter);
+            
+            formData.append('day_id', dayId);
+            formData.append('avatar_id', character.avatar_id);
+            formData.append('voice_id', character.voice_id);
+            formData.append('excel', excelFile);
+
+            const response = await api.post('/modules/practice/bulk-upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            toast.success(`✅ Practice uploaded! ${response.data.count} items created`, {
+                id: loadingToastId
+            });
+
+            setSelectedCharacter(characters.find(c => c.is_default)?._id || "");
             setExcelFile(null);
-            setExcelData(null);
+
         } catch (error) {
-            const errorMessage = error.response?.data?.error || error.message || "Failed to upload sentences.";
-            toast.error(errorMessage);
+            toast.error(error.response?.data?.error || "Upload failed", {
+                id: loadingToastId
+            });
         } finally {
-            setIsUploading(false);
+            setIsGenerating(false);
         }
     };
-    
-    // File preview component
-    const FilePreview = ({ file, onRemove }) => (
-        <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between text-sm text-gray-700 bg-green-50 p-3 rounded-md">
-                <span className="truncate">{file.name}</span>
-                <button onClick={onRemove} className="text-red-500 hover:text-red-700">
-                    <Trash2 size={16} />
-                </button>
-            </div>
-        </div>
-    );
-    
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 font-inter">
-            <Toaster />
-            <div className="max-w-4xl mx-auto">
-                {/* Navigation Header */}
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+            <Toaster position="top-right" />
+            <div className="max-w-5xl mx-auto">
+                
                 <div className="flex items-center justify-between mb-8">
-                    <button
-                        onClick={handleBack}
-                        className="group flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl shadow hover:shadow-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-300"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="font-medium">Back</span>
+                    <button onClick={() => navigate(-1)} className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition">
+                        ← Back
                     </button>
                     <button
                         onClick={handleDownloadTemplate}
-                        className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-700 to-sky-900 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-sky-900 hover:to-sky-950 hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
+                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-700 to-sky-900 text-white rounded-xl shadow-lg hover:shadow-xl transition"
                     >
-                        <Download size={16} className="group-hover:scale-110 transition-transform" />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                         <span className="font-medium">Download Template</span>
                     </button>
                 </div>
+                
+                <h1 className="text-4xl font-bold text-gray-800 mb-8">Practice Generator</h1>
 
-                {/* Main Header */}
-                <div className="text-center mb-12">
-                    <h1 className="text-5xl font-bold bg-slate-800 bg-clip-text text-transparent mb-4 ">
-                        Practice Sentence Upload
-                    </h1>
-                    <p className="text-gray-600">Bulk upload lesson content using the provided Excel template.</p>
+                <div className="bg-white rounded-2xl p-8 shadow-xl mb-6">
+                    <h3 className="text-lg font-semibold mb-3">Select Character</h3>
+                    <select
+                        value={selectedCharacter}
+                        onChange={(e) => setSelectedCharacter(e.target.value)}
+                        className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 outline-none"
+                    >
+                        <option value="">Choose character...</option>
+                        {characters.map(char => (
+                            <option key={char._id} value={char._id}>
+                                {char.name} {char.is_default ? '(Default)' : ''}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
-                {/* Bulk Upload Section */}
-                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 border border-white/20 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Upload Sentence Data</h2>
-                    
+                <div className="bg-white rounded-2xl p-8 shadow-xl mb-6">
+                    <h3 className="text-lg font-semibold mb-3">Practice Spreadsheet</h3>
+                    <input ref={excelFileRef} type="file" accept=".xlsx,.xls" onChange={(e) => setExcelFile(e.target.files[0])} className="hidden" />
                     <div
-                        onClick={() => fileInputRef.current?.click()}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        className={`group cursor-pointer h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-center p-4 transition-colors duration-300
-                                     ${isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}
+                        onClick={() => excelFileRef.current?.click()}
+                        className="cursor-pointer border-2 border-dashed rounded-xl p-12 text-center border-gray-300 hover:border-blue-400 transition"
                     >
-                        <Upload size={32} className={`mb-2 ${isDragging ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        <p className={`font-medium ${isDragging ? 'text-indigo-700' : 'text-gray-700'}`}>
-                            {isDragging ? 'Drop your file here' : 'Drag & drop your .xlsx file here, or click to select'}
-                        </p>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            accept=".xlsx"
-                            className="hidden"
-                        />
+                        {excelFile ? (
+                            <p className="text-green-600 text-lg">✓ {excelFile.name}</p>
+                        ) : (
+                            <p className="text-xl font-semibold text-gray-700">Click to upload Excel</p>
+                        )}
                     </div>
-                    {excelFile && (
-                        <FilePreview file={excelFile} onRemove={() => { setExcelFile(null); setExcelData(null); }} />
-                    )}
-                    
-                    <div className="mt-8 flex justify-end">
-                        <button
-                            onClick={handleUploadSentences}
-                            disabled={isUploading || !excelData || excelData.length === 0}
-                            className={`group relative w-full sm:w-auto px-12 py-3 rounded-xl font-semibold text-lg transition-all duration-300 overflow-hidden 
-                                         ${isUploading || !excelData || excelData.length === 0 ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-green-600 to-teal-700 text-white shadow-lg hover:shadow-xl hover:from-green-700 hover:to-teal-800'}`}
-                        >
-                            <div className="flex items-center justify-center gap-2">
-                                {isUploading ? (
-                                    <>
-                                        <svg className="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                        <span>Uploading...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Upload size={18} />
-                                        <span>Upload Sentences ({excelData ? excelData.length : 0})</span>
-                                    </>
-                                )}
-                            </div>
-                        </button>
-                    </div>
+                </div>
+
+                <div className="flex justify-center">
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isGenerating || !selectedCharacter || !excelFile || !dayId}
+                        className="px-12 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                        {isGenerating ? "Generating..." : "Generate Practice"}
+                    </button>
+                </div>
+
+                <div className="mt-4 text-center text-sm text-gray-600">
+                    Day: {dayId ? <span className="text-green-600 font-semibold">Loaded</span> : <span className="text-yellow-600">Loading...</span>}
                 </div>
             </div>
         </div>

@@ -31,22 +31,16 @@ import Quiz from "./features/modules/Quiz";
 import Avatars from "./pages/Avatars";
 
 const API_USERS_URL = "http://localhost:3000/api/v1/users";
-const API_COURSES_URL = "/admincourses/get-course"; // Use API utility base path
+const API_COURSES_URL = "/admincourses/get-course";
 
 function App() {
   const [userRole, setUserRole] = useState("admin");
   const [users, setUsers] = useState([]);
-  // REMOVED: setIsLoading is assigned but never used (handled below)
-  
-  // NEW STATE: For fetching courses needed in AnnouncementsView, CourseForm, etc.
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
 
-  // Function to fetch the list of all users
   useEffect(() => {
-    // REMOVED: 'api' is defined but never used (it's used in the new courses fetch below)
     const fetchUsers = async () => {
-      // REMOVED: setIsLoading is assigned but never used (only needed if component uses it)
       try {
         const response = await fetch(API_USERS_URL);
         if (!response.ok) {
@@ -59,8 +53,7 @@ function App() {
         console.error("[Users Fetch] Catastrophic Error:", error.message);
         setUsers([]);
         toast.error("Could not connect to user API or parse data.");
-      } 
-      // REMOVED: finally block with setIsLoading(false)
+      }
     };
 
     if (userRole === "admin") {
@@ -68,7 +61,6 @@ function App() {
     }
   }, [userRole]);
   
-  // NEW EFFECT: Fetching Courses
   useEffect(() => {
     const fetchCourses = async () => {
         setLoadingCourses(true);
@@ -107,7 +99,6 @@ function App() {
     toast.success("Logged out successfully!");
   };
   
-  // Display a loading screen while courses are being fetched
   if (userRole && loadingCourses) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 text-xl font-semibold">
@@ -133,14 +124,15 @@ function App() {
               <Route path="courses/:courseSlug" element={<DaysView />} />
 
               <Route path="courses/:courseSlug/days/:dayNumber" element={<ModulesView />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/vocabulary" element={<Vocabulary />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/sentence" element={<Sentence />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/practice" element={<Practice />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/avatartostudent" element={<AvatarToStudent />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/studenttoavatar" element={<StudentToAvatar />} />
-              <Route path="courses/:courseSlug/days/:dayNumber/quiz" element={<Quiz />} />
+              
+              {/* Pass courses prop to ALL module components */}
+              <Route path="courses/:courseSlug/days/:dayNumber/vocabulary" element={<Vocabulary courses={courses} />} />
+              <Route path="courses/:courseSlug/days/:dayNumber/sentence" element={<Sentence courses={courses} />} />
+              <Route path="courses/:courseSlug/days/:dayNumber/practice" element={<Practice courses={courses} />} />
+              <Route path="courses/:courseSlug/days/:dayNumber/avatartostudent" element={<AvatarToStudent courses={courses} />} />
+              <Route path="courses/:courseSlug/days/:dayNumber/studenttoavatar" element={<StudentToAvatar courses={courses} />} />
+              <Route path="courses/:courseSlug/days/:dayNumber/quiz" element={<Quiz courses={courses} />} />
 
-              {/* New routes for the separate CourseForm page */}
               <Route
                 path="courseform"
                 element={<CourseForm allUsers={users} />}
@@ -150,10 +142,8 @@ function App() {
                 element={<CourseForm allUsers={users} />}
               />
 
-              {/* Other top-level routes */}
               <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
               <Route path="students" element={<StudentsPanel userRole={userRole} />} />
-              {/* FIX: Passing courses to AnnouncementsView */}
               <Route path="announcements" element={<AnnouncementsView userRole={userRole} courses={courses} />} />
               <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
               <Route path="transactions" element={<TransactionsView />} />
