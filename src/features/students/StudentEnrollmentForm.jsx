@@ -14,7 +14,7 @@ const getCourseDisplay = (courseId, courses) => {
         ? courses.find(c => c._id === normalizedCourseId) 
         : null; 
     
-    return course ? `${course.name} (${course.code})` : 'Unknown Course'; 
+    return course ? `${course.name} (${course.code})` : 'All Courses'; 
 };
 
 // =========================================================

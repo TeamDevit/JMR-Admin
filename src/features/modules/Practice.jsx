@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 import api from '../../utils/api';
 
-const Practice = ({ courses }) => {
+const Practice = () => {
     const { courseSlug, dayNumber } = useParams();
     const navigate = useNavigate();
 
@@ -11,7 +11,7 @@ const Practice = ({ courses }) => {
     const [selectedCharacter, setSelectedCharacter] = useState("");
     const [excelFile, setExcelFile] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [dayId, setDayId] = useState(null);
+    const [moduleId, setModuleId] = useState(null);
 
     const excelFileRef = useRef(null);
 
@@ -32,45 +32,38 @@ const Practice = ({ courses }) => {
     }, []);
 
     useEffect(() => {
-        const fetchDayId = async () => {
+        const setupModule = async () => {
             try {
-                const course = courses.find(c => c.code === courseSlug);
+                const courseRes = await api.get(`/admincourses/course/${courseSlug}`);
+                const course_id = courseRes.data._id;
                 
-                if (!course) {
-                    toast.error("Course not found");
-                    return;
+                const dayRes = await api.get(`/admincourses/course/${course_id}/day/${dayNumber}`);
+                const day_id = dayRes.data._id;
+                
+                let moduleRes = await api.get(`/modules?day_id=${day_id}&type=practice`);
+                
+                if (!moduleRes.data || moduleRes.data.length === 0) {
+                    moduleRes = await api.post('/modules', {
+                        course_id,
+                        day_id,
+                        type: 'practice',
+                        item_ids: []
+                    });
+                    setModuleId(moduleRes.data._id);
+                } else {
+                    setModuleId(moduleRes.data[0]._id);
                 }
-
-                const daysRes = await api.get(`/days/course-days/${course._id}`);
-                
-                let daysArray = [];
-                if (Array.isArray(daysRes.data)) {
-                    daysArray = daysRes.data;
-                } else if (daysRes.data.days) {
-                    daysArray = daysRes.data.days;
-                } else if (daysRes.data.data) {
-                    daysArray = daysRes.data.data;
-                }
-                
-                const day = daysArray.find(d => d.day_number === parseInt(dayNumber));
-                
-                if (!day) {
-                    toast.error("Day not found");
-                    return;
-                }
-
-                setDayId(day._id);
             } catch (error) {
-                console.error("Error fetching day:", error);
-                toast.error("Failed to load day information");
+                toast.error("Failed to initialize module");
             }
         };
 
-        if (courses.length > 0 && courseSlug && dayNumber) {
-            fetchDayId();
+        if (courseSlug && dayNumber) {
+            setupModule();
         }
-    }, [courses, courseSlug, dayNumber]);
+    }, [courseSlug, dayNumber]);
 
+    // ⭐ NEW HANDLER FUNCTION
     const handleDownloadTemplate = () => {
         const link = document.createElement("a");
         link.href = "/templates/practice_sentences_template.xlsx"; 
@@ -90,8 +83,8 @@ const Practice = ({ courses }) => {
             toast.error("Please upload practice spreadsheet");
             return;
         }
-        if (!dayId) {
-            toast.error("Day information not loaded");
+        if (!moduleId) {
+            toast.error("Module not ready");
             return;
         }
 
@@ -102,7 +95,7 @@ const Practice = ({ courses }) => {
             const formData = new FormData();
             const character = characters.find(c => c._id === selectedCharacter);
             
-            formData.append('day_id', dayId);
+            formData.append('module_id', moduleId);
             formData.append('avatar_id', character.avatar_id);
             formData.append('voice_id', character.voice_id);
             formData.append('excel', excelFile);
@@ -132,6 +125,7 @@ const Practice = ({ courses }) => {
             <Toaster position="top-right" />
             <div className="max-w-5xl mx-auto">
                 
+                {/* ⭐ NEW HEADER SECTION */}
                 <div className="flex items-center justify-between mb-8">
                     <button onClick={() => navigate(-1)} className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition">
                         ← Back
@@ -183,7 +177,7 @@ const Practice = ({ courses }) => {
                 <div className="flex justify-center">
                     <button
                         onClick={handleGenerate}
-                        disabled={isGenerating || !selectedCharacter || !excelFile || !dayId}
+                        disabled={isGenerating || !selectedCharacter || !excelFile || !moduleId}
                         className="px-12 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                         {isGenerating ? "Generating..." : "Generate Practice"}
@@ -191,7 +185,7 @@ const Practice = ({ courses }) => {
                 </div>
 
                 <div className="mt-4 text-center text-sm text-gray-600">
-                    Day: {dayId ? <span className="text-green-600 font-semibold">Loaded</span> : <span className="text-yellow-600">Loading...</span>}
+                    Module: {moduleId ? <span className="text-green-600 font-semibold">Ready</span> : <span className="text-yellow-600">Loading...</span>}
                 </div>
             </div>
         </div>

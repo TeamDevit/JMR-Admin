@@ -88,7 +88,7 @@ const AnnouncementsView = ({ userRole, courses = [] }) => {
         }
         
         const course = courses.find(c => c._id === courseId.toString()); 
-        return course ? `${course.name} (${course.code})` : 'Unknown Course'; 
+        return course ? `${course.name} (${course.code})` : 'All Courses'; 
     }, [courses]);
 
     const filteredAnnouncements = useMemo(() => {
