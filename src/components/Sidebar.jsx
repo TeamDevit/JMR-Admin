@@ -25,9 +25,9 @@ const Sidebar = ({ userRole, handleLogout }) => {
     { name: "Courses", icon: GraduationCap, path: "courses", roles: ["admin", "instructor"] },
     { name: "Users", icon: Users, path: "instructors", roles: ["admin"] },
     { name: "Students", icon: User2, path: "students", roles: ["admin", "instructor"] },
-    { name: "Bulk Enrollment", icon: Upload, path: "bulk-enrollment", roles: ["admin"] },
+    // { name: "Bulk Enrollment", icon: Upload, path: "bulk-enrollment", roles: ["admin"] },
     { name: "Announcements", icon: Bell, path: "announcements", roles: ["admin", "instructor"] },
-    { name: "Referrals", icon: Gift, path: "referrals", roles: ["admin"] },
+    // { name: "Referrals", icon: Gift, path: "referrals", roles: ["admin"] },
     { name: "Transactions", icon: DollarSign, path: "transactions", roles: ["admin"] },
     { name: "Avatars", icon: Bot, path: "avatars", roles: ["admin", "instructor"] },
     { name: "Account", icon: Settings, path: "account", roles: ["admin", "instructor"] }, // 👈 New

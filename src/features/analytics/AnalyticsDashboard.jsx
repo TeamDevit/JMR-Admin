@@ -3,7 +3,7 @@ import { FaFileExcel, FaChartLine, FaUsers, FaDollarSign, FaBook, FaCalendar, Fa
 import * as XLSX from 'xlsx';
 import api from '../../utils/api';
 
-const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
+const AnalyticsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
@@ -42,6 +42,10 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
       if (progress.status === 'fulfilled') setProgressStats(progress.value.data.data || progress.value.data);
       if (content.status === 'fulfilled') setContentSummary(content.value.data.data || content.value.data);
 
+      const hasAnyError = [dashboard, overview, usage, progress, content].some(r => r.status === 'rejected');
+      if (hasAnyError) {
+        console.warn('Some analytics endpoints failed, showing partial data');
+      }
     } catch (err) {
       setError(err.message);
       console.error('Analytics fetch error:', err);
@@ -60,9 +64,6 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
 
     if (dashboardStats) {
       const dashData = [
-        ['Erus Academy - Analytics Report', ''],
-        ['Generated On', new Date().toLocaleDateString()],
-        [''],
         ['Dashboard Statistics', ''],
         ['Metric', 'Value'],
         ['Total Revenue', `₹${dashboardStats.totalRevenue?.toFixed(2) || 0}`],
@@ -90,7 +91,7 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
 
     if (analyticsOverview) {
       const overviewData = [
-        ['User Analytics', ''],
+        ['Analytics Overview', ''],
         ['Metric', 'Value'],
         ['Total Users', analyticsOverview.totalUsers || 0],
         ['Active Users', analyticsOverview.activeUsers || 0],
@@ -98,7 +99,7 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
         ['Avg Completion Rate', `${analyticsOverview.averageCompletionRate?.toFixed(1) || 0}%`]
       ];
       const ws2 = XLSX.utils.aoa_to_sheet(overviewData);
-      XLSX.utils.book_append_sheet(wb, ws2, 'Users');
+      XLSX.utils.book_append_sheet(wb, ws2, 'Overview');
     }
 
     if (usageStats?.loginActivity?.length > 0) {
@@ -107,7 +108,28 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
         usageData.push([day.date, day.count || 0]);
       });
       const ws3 = XLSX.utils.aoa_to_sheet(usageData);
-      XLSX.utils.book_append_sheet(wb, ws3, 'Usage');
+      XLSX.utils.book_append_sheet(wb, ws3, 'Usage Stats');
+    }
+
+    if (progressStats) {
+      const progressData = [['Progress Statistics', ''], ['Category', 'Metric', 'Value']];
+      
+      if (progressStats.usersByDay) {
+        progressData.push(['', 'Users by Day', '']);
+        Object.entries(progressStats.usersByDay).forEach(([day, count]) => {
+          progressData.push(['', `Day ${day}`, count]);
+        });
+      }
+      
+      if (progressStats.moduleCompletion) {
+        progressData.push(['', 'Module Completion', '']);
+        Object.entries(progressStats.moduleCompletion).forEach(([module, avg]) => {
+          progressData.push(['', module, `${avg?.toFixed(1) || 0}%`]);
+        });
+      }
+      
+      const ws4 = XLSX.utils.aoa_to_sheet(progressData);
+      XLSX.utils.book_append_sheet(wb, ws4, 'Progress');
     }
 
     if (contentSummary) {
@@ -125,11 +147,6 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
 
     const timestamp = new Date().toISOString().split('T')[0];
     XLSX.writeFile(wb, `erus-analytics-${timestamp}.xlsx`);
-  };
-
-  const handleCourseClick = (course) => {
-    if (setSelectedCourse) setSelectedCourse(course);
-    if (setCurrentView) setCurrentView('course-dashboard');
   };
 
   if (loading) {
@@ -168,8 +185,8 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard - Erus Academy Private Limited</h1>
-            <p className="text-gray-600 mt-1">Analytics & Performance Overview</p>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-600 mt-1">Comprehensive platform insights and reporting</p>
           </div>
           
           <div className="flex gap-3">
@@ -189,10 +206,6 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
               Export Excel
             </button>
           </div>
-        </div>
-
-        <div className="bg-indigo-600 text-white p-4 rounded-lg">
-          <h2 className="text-xl font-semibold">Erus Academy Real-time Analytics Dashboard</h2>
         </div>
       </div>
 
@@ -231,45 +244,75 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-green-600">₹{dashboardStats?.totalRevenue?.toLocaleString() || 0}</p>
-            </div>
-            <FaDollarSign className="h-8 w-8 text-green-500" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Students</p>
-              <p className="text-2xl font-bold text-blue-600">{dashboardStats?.totalStudents?.toLocaleString() || 0}</p>
-            </div>
-            <FaUsers className="h-8 w-8 text-blue-500" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Active Courses</p>
-              <p className="text-2xl font-bold text-indigo-600">{dashboardStats?.courses?.length || 0}</p>
-            </div>
-            <FaBook className="h-8 w-8 text-indigo-500" />
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Avg Completion</p>
-              <p className="text-2xl font-bold text-purple-600">{analyticsOverview?.averageCompletionRate?.toFixed(1) || 0}%</p>
-            </div>
-            <FaChartLine className="h-8 w-8 text-purple-500" />
-          </div>
-        </div>
+        <MetricCard
+          icon={<FaDollarSign className="text-3xl" />}
+          title="Total Revenue"
+          value={`₹${dashboardStats?.totalRevenue?.toFixed(2) || 0}`}
+          color="bg-green-500"
+        />
+        <MetricCard
+          icon={<FaUsers className="text-3xl" />}
+          title="Total Students"
+          value={dashboardStats?.totalStudents || 0}
+          color="bg-blue-500"
+        />
+        <MetricCard
+          icon={<FaChartLine className="text-3xl" />}
+          title="Avg Completion"
+          value={`${analyticsOverview?.averageCompletionRate?.toFixed(1) || 0}%`}
+          color="bg-purple-500"
+        />
+        <MetricCard
+          icon={<FaBook className="text-3xl" />}
+          title="Published Days"
+          value={`${contentSummary?.publishedDays || 0}/${contentSummary?.totalDays || 0}`}
+          color="bg-orange-500"
+        />
       </div>
 
-      {/* User & Content Overview */}
+      {/* Course Performance */}
+      {dashboardStats?.courses?.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FaBook className="text-indigo-600" />
+            Course Performance
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-gray-200">
+                <tr className="text-left text-gray-600">
+                  <th className="pb-3 font-semibold">Course</th>
+                  <th className="pb-3 font-semibold">Students</th>
+                  <th className="pb-3 font-semibold">Revenue</th>
+                  <th className="pb-3 font-semibold">Avg Progress</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {dashboardStats.courses.map((course, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition">
+                    <td className="py-4 font-medium text-gray-900">{course.title}</td>
+                    <td className="py-4 text-gray-700">{course.totalStudents || 0}</td>
+                    <td className="py-4 text-green-600 font-semibold">₹{course.totalRevenue?.toFixed(2) || 0}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[120px]">
+                          <div
+                            className="bg-indigo-600 h-2 rounded-full transition-all"
+                            style={{ width: `${course.averageProgress || 0}%` }}
+                          />
+                        </div>
+                        <span className="text-gray-700 font-medium">{course.averageProgress?.toFixed(1) || 0}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* User & Content Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4">User Overview</h3>
@@ -310,50 +353,9 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
         </div>
       </div>
 
-      {/* Course Performance - Clickable */}
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Performance Overview</h3>
-        <p className="text-gray-600 mb-6">Click on any course to view detailed analytics</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {dashboardStats?.courses?.map((course, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleCourseClick(course)}
-              className="bg-white p-4 rounded-lg border shadow-sm hover:shadow-md transition-all cursor-pointer group"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1 group-hover:text-indigo-600 transition">
-                    {course.title}
-                  </h4>
-                  <p className="text-xs text-gray-500">Students: {course.totalStudents || 0}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-600">₹{course.totalRevenue?.toLocaleString() || 0}</p>
-                  <p className="text-xs text-gray-500">Revenue</p>
-                </div>
-              </div>
-              <div className="mb-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Avg Progress</span>
-                  <span className="font-semibold">{course.averageProgress?.toFixed(1) || 0}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300 group-hover:bg-indigo-500" 
-                    style={{ width: `${Math.min(course.averageProgress || 0, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Usage Trends */}
       {usageStats?.loginActivity?.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <FaChartLine className="text-indigo-600" />
             Login Activity (Last 7 Days)
@@ -381,14 +383,18 @@ const AnalyticsDashboard = ({ setSelectedCourse, setCurrentView }) => {
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-        <p className="text-sm text-gray-500">Erus Course Management</p>
-        <p className="text-sm text-gray-400 mt-1">© Copyright 2025 - Erus Academy Private Limited</p>
-      </div>
     </div>
   );
 };
+
+const MetricCard = ({ icon, title, value, color }) => (
+  <div className={`${color} text-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow`}>
+    <div className="flex items-center justify-between mb-2">
+      {icon}
+    </div>
+    <h3 className="text-sm font-medium opacity-90 mb-1">{title}</h3>
+    <p className="text-3xl font-bold">{value}</p>
+  </div>
+);
 
 export default AnalyticsDashboard;

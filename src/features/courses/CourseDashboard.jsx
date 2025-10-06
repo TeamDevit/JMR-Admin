@@ -19,8 +19,8 @@ import {
   Activity
 } from 'lucide-react';
 
-const CourseDashboard = ({ selectedCourse, setCurrentView, handleGoBack }) => {
-  // Mock data for individual course - replace with real data
+const CourseDashboard = ({ selectedCourse, setCurrentView }) => {
+  const handleGoBack = () => setCurrentView('dashboard');  // Mock data for individual course - replace with real data
   const courseStats = {
     totalRevenue: selectedCourse.price * selectedCourse.studentsEnrolled,
     enrollments: selectedCourse.studentsEnrolled || 0,

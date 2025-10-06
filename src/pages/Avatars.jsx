@@ -1,55 +1,40 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PlusCircle, Loader2, Play, Square, UserCheck } from "lucide-react";
+import { PlusCircle, Loader2, Play, UserCheck } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import api from "../utils/api";
 
 const Avatars = () => {
-    // State for form inputs
     const [characterName, setCharacterName] = useState("");
     const [avatarId, setAvatarId] = useState("");
     const [voiceId, setVoiceId] = useState("");
     const [isDefault, setIsDefault] = useState(false);
+    const [notes, setNotes] = useState(""); // ✅ New notes state
 
-    // Default script text for preview
     const defaultScriptText = "Hi this is sample video";
-
-    // Saved characters
     const [characters, setCharacters] = useState([]);
-
-    // State for loading/submission status
     const [isSaving, setIsSaving] = useState(false);
     const [isPreviewing, setIsPreviewing] = useState(false);
     const [hasPreviewed, setHasPreviewed] = useState(false);
-
-    // State for video preview
     const [isPlaying, setIsPlaying] = useState(false);
     const [previewUrl, setPreviewUrl] = useState("");
     const videoRef = useRef(null);
 
-    // Function to fetch all characters from the backend
-  // Function to fetch all characters from the backend
-const fetchCharacters = async () => {
-    try {
-        const res = await api.get("/characters/get-characters");
-
-        // ✅ Check if the characters property exists and is an array
-       if (Array.isArray(res.data)) {
-    setCharacters(res.data);
-} else {
-            // If the data is not an array, default to an empty array
+    const fetchCharacters = async () => {
+        try {
+            const res = await api.get("/characters/get-characters");
+            if (Array.isArray(res.data)) {
+                setCharacters(res.data);
+            } else {
+                setCharacters([]);
+            }
+        } catch (error) {
+            console.error("Error fetching characters:", error);
+            toast.error("Failed to fetch saved characters.");
             setCharacters([]);
-            console.warn("API response did not contain a valid characters array:", res.data);
         }
+    };
 
-    } catch (error) {
-        console.error("Error fetching characters:", error);
-        toast.error("Failed to fetch saved characters.");
-        setCharacters([]); // Set to empty array on error to prevent crashes
-    }
-};
-
-    // Fetch characters on component mount
     useEffect(() => {
         fetchCharacters();
     }, []);
@@ -59,6 +44,7 @@ const fetchCharacters = async () => {
         setAvatarId(char.avatar_id);
         setVoiceId(char.voice_id);
         setIsDefault(char.is_default);
+        setNotes(char.notes || ""); // ✅ Load notes
         setHasPreviewed(false);
         setPreviewUrl("");
         toast.success(`Using ${char.name}'s settings ✨`);
@@ -82,18 +68,23 @@ const fetchCharacters = async () => {
                 return;
             }
 
+            if (!previewUrl) {
+                toast.error("Please preview the avatar before saving.");
+                setIsSaving(false);
+                return;
+            }
+
             const newCharacter = {
                 name: characterName,
                 avatar_id: avatarId,
                 voice_id: voiceId,
                 is_default: isDefault,
+                notes: notes, // ✅ Include notes
+                preview_url: previewUrl,
             };
 
-            // ✅ Make POST request to the backend
             await api.post("/characters/create-character", newCharacter);
             toast.success("Character saved! ✨");
-
-            // ✅ Fetch the updated list of characters after saving
             await fetchCharacters();
 
             // Reset form
@@ -101,11 +92,11 @@ const fetchCharacters = async () => {
             setAvatarId("");
             setVoiceId("");
             setIsDefault(false);
+            setNotes(""); // ✅ Reset notes
             setHasPreviewed(false);
             setPreviewUrl("");
         } catch (error) {
-            console.error("Error saving character:", error);
-            const errorMessage = error.response?.data?.error || "An unexpected error occurred.";
+            const errorMessage = error.response?.data?.error || error.message;
             toast.error(errorMessage);
         } finally {
             setIsSaving(false);
@@ -133,8 +124,6 @@ const fetchCharacters = async () => {
             const generateRes = await api.post("/heygen/generate", requestBody, {
                 timeout: 300000,
             });
-            
-            console.log("Response from backend:", generateRes.data);
 
             const videoUrl = generateRes.data.videoUrl || generateRes.data.data?.video_url;
 
@@ -146,7 +135,6 @@ const fetchCharacters = async () => {
             } else {
                 throw new Error("Video URL not found in the response.");
             }
-
         } catch (error) {
             console.error("Error during video generation:", error);
             setIsPreviewing(false);
@@ -174,7 +162,6 @@ const fetchCharacters = async () => {
             <Toaster position="top-right" reverseOrder={false} />
 
             <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-10">
-                {/* Create New Avatar Form */}
                 <div className="flex items-center space-x-4 mb-8 border-b pb-4">
                     <PlusCircle size={36} className="text-indigo-600" />
                     <h1 className="text-4xl font-extrabold text-gray-900">
@@ -183,10 +170,8 @@ const fetchCharacters = async () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-10">
-                    {/* Form Section */}
                     <div className="flex-1 md:w-1/2">
                         <form onSubmit={handleSaveOrPreview} className="space-y-6">
-                            {/* Character Name Input */}
                             <div>
                                 <label className="block text-lg font-medium text-gray-700">
                                     Character Name *
@@ -201,7 +186,6 @@ const fetchCharacters = async () => {
                                 />
                             </div>
 
-                            {/* Avatar ID Input */}
                             <div>
                                 <label className="block text-lg font-medium text-gray-700">
                                     Avatar ID *
@@ -218,7 +202,6 @@ const fetchCharacters = async () => {
                                 />
                             </div>
 
-                            {/* Voice ID Input */}
                             <div>
                                 <label className="block text-lg font-medium text-gray-700">
                                     Voice ID *
@@ -232,7 +215,22 @@ const fetchCharacters = async () => {
                                 />
                             </div>
 
-                            {/* Default Checkbox */}
+                            {/* ✅ Notes Field */}
+                            <div>
+                                <label className="block text-lg font-medium text-gray-700">
+                                    Notes (Optional)
+                                </label>
+                                <textarea
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    placeholder="e.g., Professional tone, good for Vocabulary videos"
+                                    rows={3}
+                                    maxLength={500}
+                                />
+                                <p className="text-sm text-gray-500 mt-1">{notes.length}/500 characters</p>
+                            </div>
+
                             <div className="flex items-center space-x-3">
                                 <input
                                     type="checkbox"
@@ -242,7 +240,6 @@ const fetchCharacters = async () => {
                                 <label className="text-gray-700">Set as Default Character</label>
                             </div>
 
-                            {/* Button */}
                             <motion.button
                                 type="submit"
                                 className="w-full flex justify-center py-3 px-4 rounded-md text-white bg-indigo-600"
@@ -268,7 +265,6 @@ const fetchCharacters = async () => {
                         </form>
                     </div>
 
-                    {/* Preview Section */}
                     <div className="flex-1 md:w-1/2">
                         <div className="bg-gray-50 rounded-xl p-8 border-2 border-dashed border-gray-300 flex flex-col h-full">
                             <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -340,22 +336,49 @@ const fetchCharacters = async () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {characters.map((char, index) => (
+                            {characters.map((char) => (
                                 <div
-                                    key={index}
+                                    key={char._id}
                                     className="border rounded-lg p-6 shadow hover:shadow-lg transition"
                                 >
+                                    {char.preview_url && (
+                                        <div className="mb-4">
+                                            <a 
+                                                href={char.preview_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="block relative rounded-lg overflow-hidden bg-gray-200 hover:opacity-90 transition"
+                                            >
+                                                <div className="aspect-video flex items-center justify-center">
+                                                    <Play className="h-12 w-12 text-indigo-600" />
+                                                </div>
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                                                    <span className="text-white text-sm font-medium">View Preview</span>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    )}
+                                    
                                     <h3 className="font-bold text-lg mb-2">{char.name}</h3>
                                     <p className="text-sm text-gray-600">Avatar: {char.avatar_id}</p>
                                     <p className="text-sm text-gray-600">Voice: {char.voice_id}</p>
+                                    
+                                    {/* ✅ Display Notes */}
+                                    {char.notes && (
+                                        <p className="text-sm text-gray-500 mt-2 italic">
+                                            "{char.notes}"
+                                        </p>
+                                    )}
+                                    
                                     {char.is_default && (
                                         <span className="inline-block mt-2 text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
                                             Default
                                         </span>
                                     )}
+                                    
                                     <button
                                         onClick={() => handleUseCharacter(char)}
-                                        className="mt-4 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                                        className="mt-4 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                                     >
                                         <UserCheck className="h-5 w-5 mr-2" />
                                         Use Character

@@ -13,13 +13,15 @@ import DaysView from "../features/courses/DaysView";
 import InstructorsPanel from "../features/instructors/InstructorsPanel";
 import StudentsPanel from "../features/students/StudentsPanel";
 import StudentEnrollmentForm from "../features/students/StudentEnrollmentForm";
-import MainDashboard from "../features/dashboard/MainDashboard";
+import MainDashboard from "../features/dashboard/AnalyticsDashboard";
 import TransactionsView from "../features/transactions/TransactionsView";
 import AnnouncementsView from "../features/announcements/AnnouncementsView";
 import ReferralsView from "../features/referrals/ReferralsView";
 import ModulesView from "../features/modules/ModulesView";
 import ModuleFormView from "../features/modules/ModuleFormView";
 import api from "../utils/api";
+import AnalyticsDashboard from "../features/analytics/AnalyticsDashboard";
+
 // Pages
 import Avatars from "../pages/Avatars";
 import StudentPanel from "../pages/StudentPanel";
@@ -182,8 +184,11 @@ const AdminDashboard = () => {
         }
         
         switch (currentView) {
-            case 'dashboard':
-                return <MainDashboard courses={courses} setSelectedCourse={setSelectedCourse} setCurrentView={setCurrentView} userRole={userRole} />;
+         case 'dashboard':
+    return <MainDashboard 
+        setSelectedCourse={setSelectedCourse} 
+        setCurrentView={setCurrentView} 
+    />;
             case 'courses':
                 return <CoursesView 
                             courses={courses} 
@@ -192,6 +197,8 @@ const AdminDashboard = () => {
                             setCurrentView={setCurrentView} 
                             userRole={userRole} 
                         />;
+                        case 'analytics':
+    return <AnalyticsDashboard />;
             case 'announcements':
                 // Courses are guaranteed to be loaded here if we passed the checks above!
                 return (

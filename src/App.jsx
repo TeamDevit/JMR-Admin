@@ -145,6 +145,8 @@ function App() {
               <Route path="instructors" element={<InstructorsPanel userRole={userRole} />} />
               <Route path="students" element={<StudentsPanel userRole={userRole} />} />
               <Route path="announcements" element={<AnnouncementsView userRole={userRole} courses={courses} />} />
+                            {/* <Route path="login" element={<LoginPage  />} /> */}
+
               <Route path="referrals" element={<ReferralsView userRole={userRole} />} />
               <Route path="transactions" element={<TransactionsView />} />
               <Route path="bulk-enrollment" element={<StudentEnrollmentForm courses={courses} />} />
